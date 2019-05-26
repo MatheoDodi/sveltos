@@ -1,13 +1,33 @@
 <script>
+  import PrimaryButton from "../../../Components/PrimaryButton.svelte";
   export let id, title, subtitle, description, imageUrl, address, contactEmail;
+
+  // Check to see if description is too long
+  if (description.split(" ").length > 15) {
+    // Trim description
+    description =
+      description
+        .split(" ")
+        .slice(0, 16)
+        .join(" ") + "...";
+  }
 </script>
 
 <style>
   article {
-    height: 300px;
+    height: 250px;
     display: flex;
     width: 45%;
     background-color: white;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.35s;
+  }
+
+  article:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 
   .image {
@@ -19,7 +39,7 @@
   }
 
   .content {
-    padding: 0.5rem 1rem;
+    padding: 0rem 1rem;
     flex-basis: 65%;
     display: flex;
     flex-direction: column;
@@ -31,8 +51,13 @@
 
   .content h2 {
     margin-top: 0;
-    color: #9aa5b1;
-    font-weight: normal;
+    margin-bottom: 20px;
+    font-weight: lighter;
+  }
+
+  .content p {
+    margin-top: 0;
+    color: #829ab1;
   }
 
   .content footer {
@@ -47,7 +72,7 @@
     <h2>{subtitle}</h2>
     <p>{description}</p>
     <footer>
-      <button>Show Details</button>
+      <PrimaryButton content="See Details" />
       <button>Favorite</button>
     </footer>
   </div>
