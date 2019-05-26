@@ -1,5 +1,6 @@
 <script>
   import PrimaryButton from "../../../Components/PrimaryButton.svelte";
+  import SecondaryButton from "../../../Components/SecondaryButton.svelte";
   export let id, title, subtitle, description, imageUrl, address, contactEmail;
 
   // Check to see if description is too long
@@ -11,13 +12,17 @@
         .slice(0, 16)
         .join(" ") + "...";
   }
+
+  function showMore() {
+    description = "Hi!";
+  }
 </script>
 
 <style>
   article {
     height: 250px;
     display: flex;
-    width: 45%;
+    width: 100%;
     background-color: white;
     border-radius: 5px;
     overflow: hidden;
@@ -73,8 +78,8 @@
     <h2>{subtitle}</h2>
     <p>{description}</p>
     <footer>
-      <PrimaryButton content="See Details" />
-      <button>Favorite</button>
+      <PrimaryButton onClick={showMore} content="See Details" />
+      <SecondaryButton content="Favorite" />
     </footer>
   </div>
 </article>

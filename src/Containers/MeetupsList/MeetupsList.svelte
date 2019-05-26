@@ -7,9 +7,10 @@
   .meetups-container {
     padding: 1rem 8rem;
     margin-top: 4rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-column-gap: 1rem;
+    grid-row-gap: 1.5rem;
   }
 </style>
 

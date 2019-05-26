@@ -1,30 +1,33 @@
 <script>
   export let content;
-  export let onClick;
+  export let handleClick;
 
   function handleClickEvent(e) {
-    onClick(e);
+    handleClick(e);
   }
 </script>
 
 <style>
   button {
     border-radius: 4px;
-    background: #a368fc;
-    color: white;
-    padding: 10px 15px;
-    border: none;
+    background: white;
+    color: #a368fc;
+    padding: 8.5px 13.5px;
+    border: 1.5px solid #a368fc;
     font-size: 1rem;
     outline-color: #a368fc;
   }
 
   button:hover {
-    background: #9446ed;
+    border-color: #9446ed;
+    color: #9446ed;
     cursor: pointer;
   }
 
   button:active {
-    background: #8719e0;
+    border-color: #8719e0;
+    background: #f2ebfe;
+    color: #8719e0;
   }
 </style>
 
