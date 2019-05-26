@@ -39,7 +39,7 @@
   }
 
   .content {
-    padding: 0rem 1rem;
+    padding: 1rem;
     flex-basis: 65%;
     display: flex;
     flex-direction: column;
@@ -47,6 +47,7 @@
 
   .content h1 {
     margin-bottom: 0;
+    margin-top: 0;
   }
 
   .content h2 {

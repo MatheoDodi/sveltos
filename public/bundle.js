@@ -405,8 +405,8 @@ var app = (function () {
     		c: function create() {
     			button = element("button");
     			t = text(ctx.content);
-    			button.className = "svelte-1dsw65s";
-    			add_location(button, file$1, 28, 0, 389);
+    			button.className = "svelte-41ctsf";
+    			add_location(button, file$1, 30, 0, 433);
     			dispose = listen(button, "click", prevent_default(ctx.handleClickEvent));
     		},
 
@@ -522,23 +522,23 @@ var app = (function () {
     			t7 = space();
     			button = element("button");
     			button.textContent = "Favorite";
-    			div0.className = "image svelte-1mcs1jx";
+    			div0.className = "image svelte-1fnvwce";
     			div0.style.cssText = div0_style_value = `background-image: url(${ctx.imageUrl})`;
-    			add_location(div0, file$2, 68, 2, 1299);
-    			h1.className = "svelte-1mcs1jx";
-    			add_location(h1, file$2, 70, 4, 1394);
-    			h2.className = "svelte-1mcs1jx";
-    			add_location(h2, file$2, 71, 4, 1415);
-    			p.className = "svelte-1mcs1jx";
-    			add_location(p, file$2, 72, 4, 1439);
-    			add_location(button, file$2, 75, 6, 1525);
-    			footer.className = "svelte-1mcs1jx";
-    			add_location(footer, file$2, 73, 4, 1464);
-    			div1.className = "content svelte-1mcs1jx";
-    			add_location(div1, file$2, 69, 2, 1368);
+    			add_location(div0, file$2, 69, 2, 1313);
+    			h1.className = "svelte-1fnvwce";
+    			add_location(h1, file$2, 71, 4, 1408);
+    			h2.className = "svelte-1fnvwce";
+    			add_location(h2, file$2, 72, 4, 1429);
+    			p.className = "svelte-1fnvwce";
+    			add_location(p, file$2, 73, 4, 1453);
+    			add_location(button, file$2, 76, 6, 1539);
+    			footer.className = "svelte-1fnvwce";
+    			add_location(footer, file$2, 74, 4, 1478);
+    			div1.className = "content svelte-1fnvwce";
+    			add_location(div1, file$2, 70, 2, 1382);
     			article.dataset.id = ctx.id;
-    			article.className = "svelte-1mcs1jx";
-    			add_location(article, file$2, 67, 0, 1274);
+    			article.className = "svelte-1fnvwce";
+    			add_location(article, file$2, 68, 0, 1288);
     		},
 
     		l: function claim(nodes) {
@@ -839,8 +839,8 @@ var app = (function () {
     			div = element("div");
 
     			for (i = 0; i < each_blocks.length; i += 1) each_blocks[i].c();
-    			div.className = "meetups-container svelte-bb4dvj";
-    			add_location(div, file$3, 15, 0, 269);
+    			div.className = "meetups-container svelte-zu69dg";
+    			add_location(div, file$3, 15, 0, 272);
     		},
 
     		l: function claim(nodes) {

@@ -12,8 +12,10 @@
     border-radius: 4px;
     background: #a368fc;
     color: white;
-    font-weight: bold;
     padding: 10px 15px;
+    border: none;
+    font-size: 1rem;
+    outline-color: #a368fc;
   }
 
   button:hover {

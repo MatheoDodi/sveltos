@@ -5,7 +5,7 @@
 
 <style>
   .meetups-container {
-    padding: 0 8rem;
+    padding: 1rem 8rem;
     margin-top: 4rem;
     display: flex;
     flex-direction: row;
