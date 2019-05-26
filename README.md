@@ -30,8 +30,7 @@ Fun fact: Svelte (Σβέλτος) means _fast_ in Greek!
 
 ### Built With
 
-- [Python](https://docs.python.org/3/)
-- [Flask](http://flask.pocoo.org/docs/1.0/)
+- [SvelteJS](https://svelte.dev/docs)
 
 <!-- GETTING STARTED -->
 
