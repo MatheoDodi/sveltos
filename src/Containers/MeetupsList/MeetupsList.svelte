@@ -16,14 +16,7 @@
 
 <div class="meetups-container">
 
-  {#each meetups as { id, title, subtitle, description, imageUrl, address, contactEmail } (id)}
-    <MeetupItem
-      {id}
-      {title}
-      {subtitle}
-      {description}
-      {imageUrl}
-      {address}
-      {contactEmail} />
+  {#each meetups as meetup (meetup.id)}
+    <MeetupItem {...meetup} on:toggleFavorite />
   {/each}
 </div>

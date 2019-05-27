@@ -4,6 +4,11 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    function assign(tar, src) {
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -71,10 +76,41 @@ var app = (function () {
         if (text.data !== data)
             text.data = data;
     }
+    function toggle_class(element, name, toggle) {
+        element.classList[toggle ? 'add' : 'remove'](name);
+    }
+    function custom_event(type, detail) {
+        const e = document.createEvent('CustomEvent');
+        e.initCustomEvent(type, false, false, detail);
+        return e;
+    }
 
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    function createEventDispatcher() {
+        const component = current_component;
+        return (type, detail) => {
+            const callbacks = component.$$.callbacks[type];
+            if (callbacks) {
+                // TODO are there situations where events could be dispatched
+                // in a server (non-DOM) environment?
+                const event = custom_event(type, detail);
+                callbacks.slice().forEach(fn => {
+                    fn.call(component, event);
+                });
+            }
+        };
+    }
+    // TODO figure out if we still want to support
+    // shorthand events, or if we want to implement
+    // a real bubbling mechanism
+    function bubble(component, event) {
+        const callbacks = component.$$.callbacks[event.type];
+        if (callbacks) {
+            callbacks.slice().forEach(fn => fn(event));
+        }
     }
 
     const dirty_components = [];
@@ -231,6 +267,40 @@ var app = (function () {
         while (n)
             insert(new_blocks[n - 1]);
         return new_blocks;
+    }
+
+    function get_spread_update(levels, updates) {
+        const update = {};
+        const to_null_out = {};
+        const accounted_for = { $$scope: 1 };
+        let i = levels.length;
+        while (i--) {
+            const o = levels[i];
+            const n = updates[i];
+            if (n) {
+                for (const key in o) {
+                    if (!(key in n))
+                        to_null_out[key] = 1;
+                }
+                for (const key in n) {
+                    if (!accounted_for[key]) {
+                        update[key] = n[key];
+                        accounted_for[key] = 1;
+                    }
+                }
+                levels[i] = n;
+            }
+            else {
+                for (const key in o) {
+                    accounted_for[key] = 1;
+                }
+            }
+        }
+        for (const key in to_null_out) {
+            if (!(key in update))
+                update[key] = undefined;
+        }
+        return update;
     }
     function mount_component(component, target, anchor) {
         const { fragment, on_mount, on_destroy, after_render } = component.$$;
@@ -508,8 +578,8 @@ var app = (function () {
     			button = element("button");
     			t = text(ctx.content);
     			button.className = "svelte-1w01y4d";
-    			add_location(button, file$2, 33, 0, 520);
-    			dispose = listen(button, "click", prevent_default(ctx.handleClickEvent));
+    			add_location(button, file$2, 28, 0, 436);
+    			dispose = listen(button, "click", prevent_default(ctx.click_handler));
     		},
 
     		l: function claim(nodes) {
@@ -541,37 +611,33 @@ var app = (function () {
     }
 
     function instance$1($$self, $$props, $$invalidate) {
-    	let { content, handleClick } = $$props;
+    	let { content } = $$props;
 
-      function handleClickEvent(e) {
-        handleClick(e);
-      }
-
-    	const writable_props = ['content', 'handleClick'];
+    	const writable_props = ['content'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key)) console.warn(`<SecondaryButton> was created with unknown prop '${key}'`);
     	});
 
+    	function click_handler(event) {
+    		bubble($$self, event);
+    	}
+
     	$$self.$set = $$props => {
     		if ('content' in $$props) $$invalidate('content', content = $$props.content);
-    		if ('handleClick' in $$props) $$invalidate('handleClick', handleClick = $$props.handleClick);
     	};
 
-    	return { content, handleClick, handleClickEvent };
+    	return { content, click_handler };
     }
 
     class SecondaryButton extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$2, safe_not_equal, ["content", "handleClick"]);
+    		init(this, options, instance$1, create_fragment$2, safe_not_equal, ["content"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.content === undefined && !('content' in props)) {
     			console.warn("<SecondaryButton> was created without expected prop 'content'");
-    		}
-    		if (ctx.handleClick === undefined && !('handleClick' in props)) {
-    			console.warn("<SecondaryButton> was created without expected prop 'handleClick'");
     		}
     	}
 
@@ -580,14 +646,6 @@ var app = (function () {
     	}
 
     	set content(value) {
-    		throw new Error("<SecondaryButton>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get handleClick() {
-    		throw new Error("<SecondaryButton>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set handleClick(value) {
     		throw new Error("<SecondaryButton>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -608,9 +666,10 @@ var app = (function () {
     	});
 
     	var secondarybutton = new SecondaryButton({
-    		props: { content: "Favorite" },
+    		props: { content: ctx.favorite ? 'Remove from Favorites' : 'Favorite' },
     		$$inline: true
     	});
+    	secondarybutton.$on("click", ctx.handleFavorite);
 
     	return {
     		c: function create() {
@@ -634,25 +693,26 @@ var app = (function () {
     			primarybutton.$$.fragment.c();
     			t9 = space();
     			secondarybutton.$$.fragment.c();
-    			div0.className = "image svelte-ozddqf";
+    			div0.className = "image svelte-irirdx";
     			div0.style.cssText = div0_style_value = `background-image: url(${ctx.snapImageUrl})`;
-    			add_location(div0, file$3, 90, 2, 1752);
-    			h1.className = "svelte-ozddqf";
-    			add_location(h1, file$3, 92, 4, 1851);
-    			h2.className = "svelte-ozddqf";
-    			add_location(h2, file$3, 93, 4, 1876);
-    			p.className = "svelte-ozddqf";
-    			add_location(p, file$3, 94, 4, 1904);
+    			add_location(div0, file$3, 115, 2, 2231);
+    			h1.className = "svelte-irirdx";
+    			add_location(h1, file$3, 117, 4, 2330);
+    			h2.className = "svelte-irirdx";
+    			add_location(h2, file$3, 118, 4, 2355);
+    			p.className = "svelte-irirdx";
+    			add_location(p, file$3, 119, 4, 2383);
     			a.href = a_href_value = `mailto:${ctx.snapContactEmail}`;
-    			a.className = "svelte-ozddqf";
-    			add_location(a, file$3, 95, 4, 1933);
-    			footer.className = "svelte-ozddqf";
-    			add_location(footer, file$3, 96, 4, 2001);
-    			div1.className = "content svelte-ozddqf";
-    			add_location(div1, file$3, 91, 2, 1825);
+    			a.className = "svelte-irirdx";
+    			add_location(a, file$3, 120, 4, 2412);
+    			footer.className = "svelte-irirdx";
+    			add_location(footer, file$3, 121, 4, 2480);
+    			div1.className = "content svelte-irirdx";
+    			add_location(div1, file$3, 116, 2, 2304);
     			article.dataset.id = ctx.snapId;
-    			article.className = "svelte-ozddqf";
-    			add_location(article, file$3, 89, 0, 1723);
+    			article.className = "svelte-irirdx";
+    			toggle_class(article, "favorite", ctx.favorite);
+    			add_location(article, file$3, 114, 0, 2187);
     		},
 
     		l: function claim(nodes) {
@@ -691,6 +751,14 @@ var app = (function () {
     			var primarybutton_changes = {};
     			if (changed.showMore) primarybutton_changes.onClick = ctx.showMore;
     			primarybutton.$set(primarybutton_changes);
+
+    			var secondarybutton_changes = {};
+    			if (changed.favorite) secondarybutton_changes.content = ctx.favorite ? 'Remove from Favorites' : 'Favorite';
+    			secondarybutton.$set(secondarybutton_changes);
+
+    			if (changed.favorite) {
+    				toggle_class(article, "favorite", ctx.favorite);
+    			}
     		},
 
     		i: function intro(local) {
@@ -722,8 +790,9 @@ var app = (function () {
 
     function instance$2($$self, $$props, $$invalidate) {
     	
-      let { id, title, subtitle, description, imageUrl, address, contactEmail } = $$props;
+      let { id, title, subtitle, description, imageUrl, address, contactEmail, favorite } = $$props;
 
+      const dispatch = createEventDispatcher();
       const snapId = id;
       const snapTitle = title;
       const snapSubtitle = subtitle;
@@ -745,7 +814,11 @@ var app = (function () {
         $$invalidate('snapDescription', snapDescription = "Hi!");
       }
 
-    	const writable_props = ['id', 'title', 'subtitle', 'description', 'imageUrl', 'address', 'contactEmail'];
+      function handleFavorite() {
+        dispatch("toggleFavorite", snapId);
+      }
+
+    	const writable_props = ['id', 'title', 'subtitle', 'description', 'imageUrl', 'address', 'contactEmail', 'favorite'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key)) console.warn(`<MeetupItem> was created with unknown prop '${key}'`);
     	});
@@ -758,6 +831,7 @@ var app = (function () {
     		if ('imageUrl' in $$props) $$invalidate('imageUrl', imageUrl = $$props.imageUrl);
     		if ('address' in $$props) $$invalidate('address', address = $$props.address);
     		if ('contactEmail' in $$props) $$invalidate('contactEmail', contactEmail = $$props.contactEmail);
+    		if ('favorite' in $$props) $$invalidate('favorite', favorite = $$props.favorite);
     	};
 
     	return {
@@ -768,20 +842,22 @@ var app = (function () {
     		imageUrl,
     		address,
     		contactEmail,
+    		favorite,
     		snapId,
     		snapTitle,
     		snapSubtitle,
     		snapDescription,
     		snapImageUrl,
     		snapContactEmail,
-    		showMore
+    		showMore,
+    		handleFavorite
     	};
     }
 
     class MeetupItem extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$3, safe_not_equal, ["id", "title", "subtitle", "description", "imageUrl", "address", "contactEmail"]);
+    		init(this, options, instance$2, create_fragment$3, safe_not_equal, ["id", "title", "subtitle", "description", "imageUrl", "address", "contactEmail", "favorite"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
@@ -805,6 +881,9 @@ var app = (function () {
     		}
     		if (ctx.contactEmail === undefined && !('contactEmail' in props)) {
     			console.warn("<MeetupItem> was created without expected prop 'contactEmail'");
+    		}
+    		if (ctx.favorite === undefined && !('favorite' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'favorite'");
     		}
     	}
 
@@ -863,6 +942,14 @@ var app = (function () {
     	set contactEmail(value) {
     		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get favorite() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set favorite(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src/Containers/MeetupsList/MeetupsList.svelte generated by Svelte v3.4.3 */
@@ -871,32 +958,24 @@ var app = (function () {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = Object.create(ctx);
-    	child_ctx.id = list[i].id;
-    	child_ctx.title = list[i].title;
-    	child_ctx.subtitle = list[i].subtitle;
-    	child_ctx.description = list[i].description;
-    	child_ctx.imageUrl = list[i].imageUrl;
-    	child_ctx.address = list[i].address;
-    	child_ctx.contactEmail = list[i].contactEmail;
+    	child_ctx.meetup = list[i];
     	return child_ctx;
     }
 
-    // (19:2) {#each meetups as { id, title, subtitle, description, imageUrl, address, contactEmail }
+    // (19:2) {#each meetups as meetup (meetup.id)}
     function create_each_block(key_1, ctx) {
     	var first, current;
 
-    	var meetupitem = new MeetupItem({
-    		props: {
-    		id: ctx.id,
-    		title: ctx.title,
-    		subtitle: ctx.subtitle,
-    		description: ctx.description,
-    		imageUrl: ctx.imageUrl,
-    		address: ctx.address,
-    		contactEmail: ctx.contactEmail
-    	},
-    		$$inline: true
-    	});
+    	var meetupitem_spread_levels = [
+    		ctx.meetup
+    	];
+
+    	let meetupitem_props = {};
+    	for (var i = 0; i < meetupitem_spread_levels.length; i += 1) {
+    		meetupitem_props = assign(meetupitem_props, meetupitem_spread_levels[i]);
+    	}
+    	var meetupitem = new MeetupItem({ props: meetupitem_props, $$inline: true });
+    	meetupitem.$on("toggleFavorite", ctx.toggleFavorite_handler);
 
     	return {
     		key: key_1,
@@ -916,14 +995,9 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			var meetupitem_changes = {};
-    			if (changed.meetups) meetupitem_changes.id = ctx.id;
-    			if (changed.meetups) meetupitem_changes.title = ctx.title;
-    			if (changed.meetups) meetupitem_changes.subtitle = ctx.subtitle;
-    			if (changed.meetups) meetupitem_changes.description = ctx.description;
-    			if (changed.meetups) meetupitem_changes.imageUrl = ctx.imageUrl;
-    			if (changed.meetups) meetupitem_changes.address = ctx.address;
-    			if (changed.meetups) meetupitem_changes.contactEmail = ctx.contactEmail;
+    			var meetupitem_changes = changed.meetups ? get_spread_update(meetupitem_spread_levels, [
+    				ctx.meetup
+    			]) : {};
     			meetupitem.$set(meetupitem_changes);
     		},
 
@@ -954,7 +1028,7 @@ var app = (function () {
 
     	var each_value = ctx.meetups;
 
-    	const get_key = ctx => ctx.id;
+    	const get_key = ctx => ctx.meetup.id;
 
     	for (var i = 0; i < each_value.length; i += 1) {
     		let child_ctx = get_each_context(ctx, each_value, i);
@@ -1022,11 +1096,15 @@ var app = (function () {
     		if (!writable_props.includes(key)) console.warn(`<MeetupsList> was created with unknown prop '${key}'`);
     	});
 
+    	function toggleFavorite_handler(event) {
+    		bubble($$self, event);
+    	}
+
     	$$self.$set = $$props => {
     		if ('meetups' in $$props) $$invalidate('meetups', meetups = $$props.meetups);
     	};
 
-    	return { meetups };
+    	return { meetups, toggleFavorite_handler };
     }
 
     class MeetupsList extends SvelteComponentDev {
@@ -1063,6 +1141,7 @@ var app = (function () {
     		props: { meetups: ctx.meetups },
     		$$inline: true
     	});
+    	meetupslist.$on("toggleFavorite", ctx.handleFavorite);
 
     	return {
     		c: function create() {
@@ -1114,72 +1193,73 @@ var app = (function () {
     			t22 = space();
     			meetupslist.$$.fragment.c();
     			h1.className = "svelte-19k4364";
-    			add_location(h1, file$5, 180, 4, 4406);
+    			add_location(h1, file$5, 203, 4, 4882);
+    			input0.value = ctx.title;
     			attr(input0, "type", "text");
     			input0.name = "title";
     			input0.className = "svelte-19k4364";
-    			add_location(input0, file$5, 182, 6, 4468);
+    			add_location(input0, file$5, 205, 6, 4944);
     			label0.htmlFor = "title";
     			label0.className = "svelte-19k4364";
-    			add_location(label0, file$5, 183, 6, 4528);
+    			add_location(label0, file$5, 210, 6, 5072);
     			div0.className = "form-control svelte-19k4364";
-    			add_location(div0, file$5, 181, 4, 4435);
+    			add_location(div0, file$5, 204, 4, 4911);
     			attr(input1, "type", "text");
     			input1.name = "subtitle";
     			input1.className = "svelte-19k4364";
-    			add_location(input1, file$5, 186, 6, 4609);
+    			add_location(input1, file$5, 213, 6, 5153);
     			label1.htmlFor = "subtitle";
     			label1.className = "svelte-19k4364";
-    			add_location(label1, file$5, 187, 6, 4675);
+    			add_location(label1, file$5, 214, 6, 5219);
     			div1.className = "form-control svelte-19k4364";
-    			add_location(div1, file$5, 185, 4, 4576);
+    			add_location(div1, file$5, 212, 4, 5120);
     			attr(input2, "type", "text");
     			input2.name = "description";
     			input2.className = "svelte-19k4364";
-    			add_location(input2, file$5, 190, 6, 4762);
+    			add_location(input2, file$5, 217, 6, 5306);
     			label2.htmlFor = "description";
     			label2.className = "svelte-19k4364";
-    			add_location(label2, file$5, 191, 6, 4834);
+    			add_location(label2, file$5, 218, 6, 5378);
     			div2.className = "form-control svelte-19k4364";
-    			add_location(div2, file$5, 189, 4, 4729);
+    			add_location(div2, file$5, 216, 4, 5273);
     			attr(input3, "type", "text");
     			input3.name = "imageUrl";
     			input3.className = "svelte-19k4364";
-    			add_location(input3, file$5, 194, 6, 4927);
+    			add_location(input3, file$5, 221, 6, 5471);
     			label3.htmlFor = "imageUrl";
     			label3.className = "svelte-19k4364";
-    			add_location(label3, file$5, 195, 6, 4993);
+    			add_location(label3, file$5, 222, 6, 5537);
     			div3.className = "form-control svelte-19k4364";
-    			add_location(div3, file$5, 193, 4, 4894);
+    			add_location(div3, file$5, 220, 4, 5438);
     			attr(input4, "type", "text");
     			input4.name = "address";
     			input4.className = "svelte-19k4364";
-    			add_location(input4, file$5, 198, 6, 5081);
+    			add_location(input4, file$5, 225, 6, 5625);
     			label4.htmlFor = "address";
     			label4.className = "svelte-19k4364";
-    			add_location(label4, file$5, 199, 6, 5145);
+    			add_location(label4, file$5, 226, 6, 5689);
     			div4.className = "form-control svelte-19k4364";
-    			add_location(div4, file$5, 197, 4, 5048);
+    			add_location(div4, file$5, 224, 4, 5592);
     			attr(input5, "type", "text");
     			input5.name = "contactEmail";
     			input5.className = "svelte-19k4364";
-    			add_location(input5, file$5, 202, 6, 5230);
+    			add_location(input5, file$5, 229, 6, 5774);
     			label5.htmlFor = "contactEmail";
     			label5.className = "svelte-19k4364";
-    			add_location(label5, file$5, 203, 6, 5304);
+    			add_location(label5, file$5, 230, 6, 5848);
     			div5.className = "form-control svelte-19k4364";
-    			add_location(div5, file$5, 201, 4, 5197);
+    			add_location(div5, file$5, 228, 4, 5741);
     			button.type = "submit";
     			button.disabled = button_disabled_value = !ctx.formValid;
     			button.className = "svelte-19k4364";
-    			add_location(button, file$5, 205, 4, 5359);
+    			add_location(button, file$5, 232, 4, 5903);
     			form.className = "svelte-19k4364";
-    			add_location(form, file$5, 179, 2, 4329);
+    			add_location(form, file$5, 202, 2, 4805);
     			main.className = "svelte-19k4364";
-    			add_location(main, file$5, 178, 0, 4320);
+    			add_location(main, file$5, 201, 0, 4796);
 
     			dispose = [
-    				listen(input0, "input", ctx.input0_input_handler),
+    				listen(input0, "input", ctx.input_handler),
     				listen(input1, "input", ctx.input1_input_handler),
     				listen(input2, "input", ctx.input2_input_handler),
     				listen(input3, "input", ctx.input3_input_handler),
@@ -1203,9 +1283,6 @@ var app = (function () {
     			append(form, t2);
     			append(form, div0);
     			append(div0, input0);
-
-    			input0.value = ctx.title;
-
     			append(div0, t3);
     			append(div0, label0);
     			append(form, t5);
@@ -1257,7 +1334,10 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			if (changed.title && (input0.value !== ctx.title)) input0.value = ctx.title;
+    			if (!current || changed.title) {
+    				input0.value = ctx.title;
+    			}
+
     			if (changed.subtitle && (input1.value !== ctx.subtitle)) input1.value = ctx.subtitle;
     			if (changed.description && (input2.value !== ctx.description)) input2.value = ctx.description;
     			if (changed.imageUrl && (input3.value !== ctx.imageUrl)) input3.value = ctx.imageUrl;
@@ -1324,7 +1404,8 @@ var app = (function () {
           imageUrl:
             "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
           address: "9200 Irvine Center Dr, Irvine, CA 92618",
-          contactEmail: "support@learningfuze.com"
+          contactEmail: "support@learningfuze.com",
+          favorite: false
         },
         {
           id: "m2",
@@ -1335,7 +1416,8 @@ var app = (function () {
           imageUrl:
             "https://s3-media1.fl.yelpcdn.com/bphoto/urKT6cl0DR3tDNFQlRKJ6g/o.jpg",
           address: " 18100 Culver Dr, Irvine, CA 92612",
-          contactEmail: "support@coffee&code.com"
+          contactEmail: "support@coffee&code.com",
+          favorite: false
         },
         {
           id: "m3",
@@ -1346,7 +1428,8 @@ var app = (function () {
           imageUrl:
             "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
           address: "9200 Irvine Center Dr, Irvine, CA 92618",
-          contactEmail: "support@learningfuze.com"
+          contactEmail: "support@learningfuze.com",
+          favorite: false
         }
       ];
 
@@ -1359,9 +1442,20 @@ var app = (function () {
           description,
           imageUrl,
           address,
-          contactEmail
+          contactEmail,
+          favorite: false
         };
         $$invalidate('meetups', meetups = [newMeetup, ...meetups]);
+        clearInputs();
+      }
+
+      function clearInputs() {
+        $$invalidate('title', title = "");
+        $$invalidate('subtitle', subtitle = "");
+        $$invalidate('description', description = "");
+        $$invalidate('imageUrl', imageUrl = "");
+        $$invalidate('address', address = "");
+        $$invalidate('contactEmail', contactEmail = "");
       }
 
       function checkFormValidity() {
@@ -1380,9 +1474,19 @@ var app = (function () {
         }
       }
 
-    	function input0_input_handler() {
-    		title = this.value;
+      function handleFavorite(e) {
+        const id = e.detail;
+
+        const meetup = meetups.find(mtup => mtup.id === id);
+        console.log(meetup);
+        meetup.favorite = !meetup.favorite;
+        $$invalidate('meetups', meetups = meetups.slice(0));
+      }
+
+    	function input_handler(e) {
+    		const $$result = (title = e.target.value);
     		$$invalidate('title', title);
+    		return $$result;
     	}
 
     	function input1_input_handler() {
@@ -1421,7 +1525,8 @@ var app = (function () {
     		meetups,
     		addMeetup,
     		checkFormValidity,
-    		input0_input_handler,
+    		handleFavorite,
+    		input_handler,
     		input1_input_handler,
     		input2_input_handler,
     		input3_input_handler,

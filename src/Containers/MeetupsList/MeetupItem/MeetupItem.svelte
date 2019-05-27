@@ -1,8 +1,18 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import PrimaryButton from "../../../Components/PrimaryButton.svelte";
   import SecondaryButton from "../../../Components/SecondaryButton.svelte";
-  export let id, title, subtitle, description, imageUrl, address, contactEmail;
+  export let id,
+    title,
+    subtitle,
+    description,
+    imageUrl,
+    address,
+    contactEmail,
+    favorite;
 
+  const dispatch = createEventDispatcher();
   const snapId = id;
   const snapTitle = title;
   const snapSubtitle = subtitle;
@@ -24,6 +34,10 @@
   function showMore() {
     snapDescription = "Hi!";
   }
+
+  function handleFavorite() {
+    dispatch("toggleFavorite", snapId);
+  }
 </script>
 
 <style>
@@ -32,11 +46,12 @@
     display: flex;
     width: 100%;
     background-color: white;
+    border: 0 solid #cfbcf2;
     border-radius: 5px;
     overflow: hidden;
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1),
-      0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.35s;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.35s;
   }
 
   article:hover {
@@ -71,6 +86,7 @@
 
   .content p {
     margin-top: 0;
+    margin-bottom: 0;
     color: #829ab1;
   }
 
@@ -85,9 +101,18 @@
   a:hover {
     color: #4098d7;
   }
+
+  .favorite {
+    box-shadow: 0 4px 6px 2px rgba(163, 105, 251, 0.25),
+      0 2px 4px -1px rgba(163, 105, 251, 0.15);
+  }
+
+  .favorite:hover {
+    box-shadow: 0 25px 50px -12px rgba(163, 105, 251, 0.4);
+  }
 </style>
 
-<article data-id={snapId}>
+<article data-id={snapId} class:favorite>
   <div class="image" style={`background-image: url(${snapImageUrl})`} />
   <div class="content">
     <h1>{snapTitle}</h1>
@@ -96,7 +121,9 @@
     <a href={`mailto:${snapContactEmail}`}> {snapContactEmail} </a>
     <footer>
       <PrimaryButton onClick={showMore} content="See Details" />
-      <SecondaryButton content="Favorite" />
+      <SecondaryButton
+        content={favorite ? 'Remove from Favorites' : 'Favorite'}
+        on:click={handleFavorite} />
     </footer>
   </div>
 </article>

@@ -20,7 +20,8 @@
       imageUrl:
         "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
       address: "9200 Irvine Center Dr, Irvine, CA 92618",
-      contactEmail: "support@learningfuze.com"
+      contactEmail: "support@learningfuze.com",
+      favorite: false
     },
     {
       id: "m2",
@@ -31,7 +32,8 @@
       imageUrl:
         "https://s3-media1.fl.yelpcdn.com/bphoto/urKT6cl0DR3tDNFQlRKJ6g/o.jpg",
       address: " 18100 Culver Dr, Irvine, CA 92612",
-      contactEmail: "support@coffee&code.com"
+      contactEmail: "support@coffee&code.com",
+      favorite: false
     },
     {
       id: "m3",
@@ -42,7 +44,8 @@
       imageUrl:
         "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
       address: "9200 Irvine Center Dr, Irvine, CA 92618",
-      contactEmail: "support@learningfuze.com"
+      contactEmail: "support@learningfuze.com",
+      favorite: false
     }
   ];
 
@@ -55,9 +58,20 @@
       description,
       imageUrl,
       address,
-      contactEmail
+      contactEmail,
+      favorite: false
     };
     meetups = [newMeetup, ...meetups];
+    clearInputs();
+  }
+
+  function clearInputs() {
+    title = "";
+    subtitle = "";
+    description = "";
+    imageUrl = "";
+    address = "";
+    contactEmail = "";
   }
 
   function checkFormValidity() {
@@ -74,6 +88,15 @@
     } else {
       formValid = false;
     }
+  }
+
+  function handleFavorite(e) {
+    const id = e.detail;
+
+    const meetup = meetups.find(mtup => mtup.id === id);
+    console.log(meetup);
+    meetup.favorite = !meetup.favorite;
+    meetups = meetups.slice(0);
   }
 </script>
 
@@ -180,7 +203,11 @@
   <form on:submit|preventDefault={addMeetup} on:input={checkFormValidity}>
     <h1>Create a Meetup</h1>
     <div class="form-control">
-      <input bind:value={title} type="text" name="title" />
+      <input
+        on:input={e => (title = e.target.value)}
+        value={title}
+        type="text"
+        name="title" />
       <label for="title">Title</label>
     </div>
     <div class="form-control">
@@ -205,5 +232,5 @@
     </div>
     <button type="submit" disabled={!formValid}>Create</button>
   </form>
-  <MeetupsList {meetups} />
+  <MeetupsList {meetups} on:toggleFavorite={handleFavorite} />
 </main>
