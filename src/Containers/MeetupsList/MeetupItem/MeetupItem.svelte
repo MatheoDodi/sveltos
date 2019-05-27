@@ -3,10 +3,18 @@
   import SecondaryButton from "../../../Components/SecondaryButton.svelte";
   export let id, title, subtitle, description, imageUrl, address, contactEmail;
 
+  const snapId = id;
+  const snapTitle = title;
+  const snapSubtitle = subtitle;
+  let snapDescription = description;
+  const snapImageUrl = imageUrl;
+  const snapAddress = address;
+  const snapContactEmail = contactEmail;
+
   // Check to see if description is too long
-  if (description.split(" ").length > 15) {
+  if (snapDescription.split(" ").length > 15) {
     // Trim description
-    description =
+    snapDescription =
       description
         .split(" ")
         .slice(0, 16)
@@ -14,7 +22,7 @@
   }
 
   function showMore() {
-    description = "Hi!";
+    snapDescription = "Hi!";
   }
 </script>
 
@@ -69,14 +77,23 @@
   .content footer {
     margin-top: auto;
   }
+
+  a {
+    color: #62b0e8;
+  }
+
+  a:hover {
+    color: #4098d7;
+  }
 </style>
 
-<article data-id={id}>
-  <div class="image" style={`background-image: url(${imageUrl})`} />
+<article data-id={snapId}>
+  <div class="image" style={`background-image: url(${snapImageUrl})`} />
   <div class="content">
-    <h1>{title}</h1>
-    <h2>{subtitle}</h2>
-    <p>{description}</p>
+    <h1>{snapTitle}</h1>
+    <h2>{snapSubtitle}</h2>
+    <p>{snapDescription}</p>
+    <a href={`mailto:${snapContactEmail}`}> {snapContactEmail} </a>
     <footer>
       <PrimaryButton onClick={showMore} content="See Details" />
       <SecondaryButton content="Favorite" />

@@ -57,6 +57,12 @@ var app = (function () {
             return fn.call(this, event);
         };
     }
+    function attr(node, attribute, value) {
+        if (value == null)
+            node.removeAttribute(attribute);
+        else
+            node.setAttribute(attribute, value);
+    }
     function children(element) {
         return Array.from(element.childNodes);
     }
@@ -360,10 +366,10 @@ var app = (function () {
     			header = element("header");
     			h1 = element("h1");
     			h1.textContent = "Sveltos";
-    			h1.className = "svelte-n06kz2";
-    			add_location(h1, file, 24, 2, 306);
-    			header.className = "svelte-n06kz2";
-    			add_location(header, file, 23, 0, 295);
+    			h1.className = "svelte-tplhvh";
+    			add_location(h1, file, 25, 2, 323);
+    			header.className = "svelte-tplhvh";
+    			add_location(header, file, 24, 0, 312);
     		},
 
     		l: function claim(nodes) {
@@ -591,7 +597,7 @@ var app = (function () {
     const file$3 = "src/Containers/MeetupsList/MeetupItem/MeetupItem.svelte";
 
     function create_fragment$3(ctx) {
-    	var article, div0, div0_style_value, t0, div1, h1, t1, t2, h2, t3, t4, p, t5, t6, footer, t7, current;
+    	var article, div0, div0_style_value, t0, div1, h1, t1, t2, h2, t3, t4, p, t5, t6, a, t7, a_href_value, t8, footer, t9, current;
 
     	var primarybutton = new PrimaryButton({
     		props: {
@@ -613,34 +619,40 @@ var app = (function () {
     			t0 = space();
     			div1 = element("div");
     			h1 = element("h1");
-    			t1 = text(ctx.title);
+    			t1 = text(ctx.snapTitle);
     			t2 = space();
     			h2 = element("h2");
-    			t3 = text(ctx.subtitle);
+    			t3 = text(ctx.snapSubtitle);
     			t4 = space();
     			p = element("p");
-    			t5 = text(ctx.description);
+    			t5 = text(ctx.snapDescription);
     			t6 = space();
+    			a = element("a");
+    			t7 = text(ctx.snapContactEmail);
+    			t8 = space();
     			footer = element("footer");
     			primarybutton.$$.fragment.c();
-    			t7 = space();
+    			t9 = space();
     			secondarybutton.$$.fragment.c();
-    			div0.className = "image svelte-1ntse32";
-    			div0.style.cssText = div0_style_value = `background-image: url(${ctx.imageUrl})`;
-    			add_location(div0, file$3, 74, 2, 1444);
-    			h1.className = "svelte-1ntse32";
-    			add_location(h1, file$3, 76, 4, 1539);
-    			h2.className = "svelte-1ntse32";
-    			add_location(h2, file$3, 77, 4, 1560);
-    			p.className = "svelte-1ntse32";
-    			add_location(p, file$3, 78, 4, 1584);
-    			footer.className = "svelte-1ntse32";
-    			add_location(footer, file$3, 79, 4, 1609);
-    			div1.className = "content svelte-1ntse32";
-    			add_location(div1, file$3, 75, 2, 1513);
-    			article.dataset.id = ctx.id;
-    			article.className = "svelte-1ntse32";
-    			add_location(article, file$3, 73, 0, 1419);
+    			div0.className = "image svelte-ozddqf";
+    			div0.style.cssText = div0_style_value = `background-image: url(${ctx.snapImageUrl})`;
+    			add_location(div0, file$3, 90, 2, 1752);
+    			h1.className = "svelte-ozddqf";
+    			add_location(h1, file$3, 92, 4, 1851);
+    			h2.className = "svelte-ozddqf";
+    			add_location(h2, file$3, 93, 4, 1876);
+    			p.className = "svelte-ozddqf";
+    			add_location(p, file$3, 94, 4, 1904);
+    			a.href = a_href_value = `mailto:${ctx.snapContactEmail}`;
+    			a.className = "svelte-ozddqf";
+    			add_location(a, file$3, 95, 4, 1933);
+    			footer.className = "svelte-ozddqf";
+    			add_location(footer, file$3, 96, 4, 2001);
+    			div1.className = "content svelte-ozddqf";
+    			add_location(div1, file$3, 91, 2, 1825);
+    			article.dataset.id = ctx.snapId;
+    			article.className = "svelte-ozddqf";
+    			add_location(article, file$3, 89, 0, 1723);
     		},
 
     		l: function claim(nodes) {
@@ -661,37 +673,24 @@ var app = (function () {
     			append(div1, p);
     			append(p, t5);
     			append(div1, t6);
+    			append(div1, a);
+    			append(a, t7);
+    			append(div1, t8);
     			append(div1, footer);
     			mount_component(primarybutton, footer, null);
-    			append(footer, t7);
+    			append(footer, t9);
     			mount_component(secondarybutton, footer, null);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			if ((!current || changed.imageUrl) && div0_style_value !== (div0_style_value = `background-image: url(${ctx.imageUrl})`)) {
-    				div0.style.cssText = div0_style_value;
-    			}
-
-    			if (!current || changed.title) {
-    				set_data(t1, ctx.title);
-    			}
-
-    			if (!current || changed.subtitle) {
-    				set_data(t3, ctx.subtitle);
-    			}
-
-    			if (!current || changed.description) {
-    				set_data(t5, ctx.description);
+    			if (!current || changed.snapDescription) {
+    				set_data(t5, ctx.snapDescription);
     			}
 
     			var primarybutton_changes = {};
     			if (changed.showMore) primarybutton_changes.onClick = ctx.showMore;
     			primarybutton.$set(primarybutton_changes);
-
-    			if (!current || changed.id) {
-    				article.dataset.id = ctx.id;
-    			}
     		},
 
     		i: function intro(local) {
@@ -725,10 +724,17 @@ var app = (function () {
     	
       let { id, title, subtitle, description, imageUrl, address, contactEmail } = $$props;
 
+      const snapId = id;
+      const snapTitle = title;
+      const snapSubtitle = subtitle;
+      let snapDescription = description;
+      const snapImageUrl = imageUrl;
+      const snapContactEmail = contactEmail;
+
       // Check to see if description is too long
-      if (description.split(" ").length > 15) {
+      if (snapDescription.split(" ").length > 15) {
         // Trim description
-        $$invalidate('description', description =
+        $$invalidate('snapDescription', snapDescription =
           description
             .split(" ")
             .slice(0, 16)
@@ -736,7 +742,7 @@ var app = (function () {
       }
 
       function showMore() {
-        $$invalidate('description', description = "Hi!");
+        $$invalidate('snapDescription', snapDescription = "Hi!");
       }
 
     	const writable_props = ['id', 'title', 'subtitle', 'description', 'imageUrl', 'address', 'contactEmail'];
@@ -762,6 +768,12 @@ var app = (function () {
     		imageUrl,
     		address,
     		contactEmail,
+    		snapId,
+    		snapTitle,
+    		snapSubtitle,
+    		snapDescription,
+    		snapImageUrl,
+    		snapContactEmail,
     		showMore
     	};
     }
@@ -866,7 +878,6 @@ var app = (function () {
     	child_ctx.imageUrl = list[i].imageUrl;
     	child_ctx.address = list[i].address;
     	child_ctx.contactEmail = list[i].contactEmail;
-    	child_ctx.index = i;
     	return child_ctx;
     }
 
@@ -956,8 +967,8 @@ var app = (function () {
     			div = element("div");
 
     			for (i = 0; i < each_blocks.length; i += 1) each_blocks[i].c();
-    			div.className = "meetups-container svelte-15utk1x";
-    			add_location(div, file$4, 16, 0, 307);
+    			div.className = "meetups-container svelte-6uvj0b";
+    			add_location(div, file$4, 16, 0, 329);
     		},
 
     		l: function claim(nodes) {
@@ -1041,8 +1052,10 @@ var app = (function () {
 
     /* src/App.svelte generated by Svelte v3.4.3 */
 
+    const file$5 = "src/App.svelte";
+
     function create_fragment$5(ctx) {
-    	var t, current;
+    	var t0, main, form, h1, t2, div0, input0, t3, label0, t5, div1, input1, t6, label1, t8, div2, input2, t9, label2, t11, div3, input3, t12, label3, t14, div4, input4, t15, label4, t17, div5, input5, t18, label5, t20, button, t21, button_disabled_value, t22, current, dispose;
 
     	var header = new Header({ $$inline: true });
 
@@ -1054,8 +1067,127 @@ var app = (function () {
     	return {
     		c: function create() {
     			header.$$.fragment.c();
-    			t = space();
+    			t0 = space();
+    			main = element("main");
+    			form = element("form");
+    			h1 = element("h1");
+    			h1.textContent = "Create a Meetup";
+    			t2 = space();
+    			div0 = element("div");
+    			input0 = element("input");
+    			t3 = space();
+    			label0 = element("label");
+    			label0.textContent = "Title";
+    			t5 = space();
+    			div1 = element("div");
+    			input1 = element("input");
+    			t6 = space();
+    			label1 = element("label");
+    			label1.textContent = "Subtitle";
+    			t8 = space();
+    			div2 = element("div");
+    			input2 = element("input");
+    			t9 = space();
+    			label2 = element("label");
+    			label2.textContent = "Description";
+    			t11 = space();
+    			div3 = element("div");
+    			input3 = element("input");
+    			t12 = space();
+    			label3 = element("label");
+    			label3.textContent = "Image URL";
+    			t14 = space();
+    			div4 = element("div");
+    			input4 = element("input");
+    			t15 = space();
+    			label4 = element("label");
+    			label4.textContent = "Address";
+    			t17 = space();
+    			div5 = element("div");
+    			input5 = element("input");
+    			t18 = space();
+    			label5 = element("label");
+    			label5.textContent = "Email";
+    			t20 = space();
+    			button = element("button");
+    			t21 = text("Create");
+    			t22 = space();
     			meetupslist.$$.fragment.c();
+    			h1.className = "svelte-19k4364";
+    			add_location(h1, file$5, 180, 4, 4406);
+    			attr(input0, "type", "text");
+    			input0.name = "title";
+    			input0.className = "svelte-19k4364";
+    			add_location(input0, file$5, 182, 6, 4468);
+    			label0.htmlFor = "title";
+    			label0.className = "svelte-19k4364";
+    			add_location(label0, file$5, 183, 6, 4528);
+    			div0.className = "form-control svelte-19k4364";
+    			add_location(div0, file$5, 181, 4, 4435);
+    			attr(input1, "type", "text");
+    			input1.name = "subtitle";
+    			input1.className = "svelte-19k4364";
+    			add_location(input1, file$5, 186, 6, 4609);
+    			label1.htmlFor = "subtitle";
+    			label1.className = "svelte-19k4364";
+    			add_location(label1, file$5, 187, 6, 4675);
+    			div1.className = "form-control svelte-19k4364";
+    			add_location(div1, file$5, 185, 4, 4576);
+    			attr(input2, "type", "text");
+    			input2.name = "description";
+    			input2.className = "svelte-19k4364";
+    			add_location(input2, file$5, 190, 6, 4762);
+    			label2.htmlFor = "description";
+    			label2.className = "svelte-19k4364";
+    			add_location(label2, file$5, 191, 6, 4834);
+    			div2.className = "form-control svelte-19k4364";
+    			add_location(div2, file$5, 189, 4, 4729);
+    			attr(input3, "type", "text");
+    			input3.name = "imageUrl";
+    			input3.className = "svelte-19k4364";
+    			add_location(input3, file$5, 194, 6, 4927);
+    			label3.htmlFor = "imageUrl";
+    			label3.className = "svelte-19k4364";
+    			add_location(label3, file$5, 195, 6, 4993);
+    			div3.className = "form-control svelte-19k4364";
+    			add_location(div3, file$5, 193, 4, 4894);
+    			attr(input4, "type", "text");
+    			input4.name = "address";
+    			input4.className = "svelte-19k4364";
+    			add_location(input4, file$5, 198, 6, 5081);
+    			label4.htmlFor = "address";
+    			label4.className = "svelte-19k4364";
+    			add_location(label4, file$5, 199, 6, 5145);
+    			div4.className = "form-control svelte-19k4364";
+    			add_location(div4, file$5, 197, 4, 5048);
+    			attr(input5, "type", "text");
+    			input5.name = "contactEmail";
+    			input5.className = "svelte-19k4364";
+    			add_location(input5, file$5, 202, 6, 5230);
+    			label5.htmlFor = "contactEmail";
+    			label5.className = "svelte-19k4364";
+    			add_location(label5, file$5, 203, 6, 5304);
+    			div5.className = "form-control svelte-19k4364";
+    			add_location(div5, file$5, 201, 4, 5197);
+    			button.type = "submit";
+    			button.disabled = button_disabled_value = !ctx.formValid;
+    			button.className = "svelte-19k4364";
+    			add_location(button, file$5, 205, 4, 5359);
+    			form.className = "svelte-19k4364";
+    			add_location(form, file$5, 179, 2, 4329);
+    			main.className = "svelte-19k4364";
+    			add_location(main, file$5, 178, 0, 4320);
+
+    			dispose = [
+    				listen(input0, "input", ctx.input0_input_handler),
+    				listen(input1, "input", ctx.input1_input_handler),
+    				listen(input2, "input", ctx.input2_input_handler),
+    				listen(input3, "input", ctx.input3_input_handler),
+    				listen(input4, "input", ctx.input4_input_handler),
+    				listen(input5, "input", ctx.input5_input_handler),
+    				listen(form, "submit", prevent_default(ctx.addMeetup)),
+    				listen(form, "input", ctx.checkFormValidity)
+    			];
     		},
 
     		l: function claim(nodes) {
@@ -1064,12 +1196,78 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			mount_component(header, target, anchor);
-    			insert(target, t, anchor);
-    			mount_component(meetupslist, target, anchor);
+    			insert(target, t0, anchor);
+    			insert(target, main, anchor);
+    			append(main, form);
+    			append(form, h1);
+    			append(form, t2);
+    			append(form, div0);
+    			append(div0, input0);
+
+    			input0.value = ctx.title;
+
+    			append(div0, t3);
+    			append(div0, label0);
+    			append(form, t5);
+    			append(form, div1);
+    			append(div1, input1);
+
+    			input1.value = ctx.subtitle;
+
+    			append(div1, t6);
+    			append(div1, label1);
+    			append(form, t8);
+    			append(form, div2);
+    			append(div2, input2);
+
+    			input2.value = ctx.description;
+
+    			append(div2, t9);
+    			append(div2, label2);
+    			append(form, t11);
+    			append(form, div3);
+    			append(div3, input3);
+
+    			input3.value = ctx.imageUrl;
+
+    			append(div3, t12);
+    			append(div3, label3);
+    			append(form, t14);
+    			append(form, div4);
+    			append(div4, input4);
+
+    			input4.value = ctx.address;
+
+    			append(div4, t15);
+    			append(div4, label4);
+    			append(form, t17);
+    			append(form, div5);
+    			append(div5, input5);
+
+    			input5.value = ctx.contactEmail;
+
+    			append(div5, t18);
+    			append(div5, label5);
+    			append(form, t20);
+    			append(form, button);
+    			append(button, t21);
+    			append(main, t22);
+    			mount_component(meetupslist, main, null);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
+    			if (changed.title && (input0.value !== ctx.title)) input0.value = ctx.title;
+    			if (changed.subtitle && (input1.value !== ctx.subtitle)) input1.value = ctx.subtitle;
+    			if (changed.description && (input2.value !== ctx.description)) input2.value = ctx.description;
+    			if (changed.imageUrl && (input3.value !== ctx.imageUrl)) input3.value = ctx.imageUrl;
+    			if (changed.address && (input4.value !== ctx.address)) input4.value = ctx.address;
+    			if (changed.contactEmail && (input5.value !== ctx.contactEmail)) input5.value = ctx.contactEmail;
+
+    			if ((!current || changed.formValid) && button_disabled_value !== (button_disabled_value = !ctx.formValid)) {
+    				button.disabled = button_disabled_value;
+    			}
+
     			var meetupslist_changes = {};
     			if (changed.meetups) meetupslist_changes.meetups = ctx.meetups;
     			meetupslist.$set(meetupslist_changes);
@@ -1094,18 +1292,29 @@ var app = (function () {
     			header.$destroy(detaching);
 
     			if (detaching) {
-    				detach(t);
+    				detach(t0);
+    				detach(main);
     			}
 
-    			meetupslist.$destroy(detaching);
+    			meetupslist.$destroy();
+
+    			run_all(dispose);
     		}
     	};
     }
 
-    function instance$4($$self) {
+    function instance$4($$self, $$props, $$invalidate) {
     	
 
-      const meetups = [
+      let title = "";
+      let subtitle = "";
+      let description = "";
+      let imageUrl = "";
+      let address = "";
+      let contactEmail = "";
+      let formValid = false;
+
+      let meetups = [
         {
           id: "m1",
           title: "Coding Bootcamp",
@@ -1118,7 +1327,7 @@ var app = (function () {
           contactEmail: "support@learningfuze.com"
         },
         {
-          id: "m1",
+          id: "m2",
           title: "Coffee & Code OC",
           subtitle: "Let's talk about code!",
           description:
@@ -1141,7 +1350,84 @@ var app = (function () {
         }
       ];
 
-    	return { meetups };
+      function addMeetup() {
+        const id = Date.now().toString();
+        const newMeetup = {
+          id,
+          title,
+          subtitle,
+          description,
+          imageUrl,
+          address,
+          contactEmail
+        };
+        $$invalidate('meetups', meetups = [newMeetup, ...meetups]);
+      }
+
+      function checkFormValidity() {
+        if (
+          title.trim() &&
+          subtitle.trim() &&
+          description.trim() &&
+          imageUrl.trim() &&
+          address.trim() &&
+          address.trim() &&
+          contactEmail.trim()
+        ) {
+          $$invalidate('formValid', formValid = true);
+        } else {
+          $$invalidate('formValid', formValid = false);
+        }
+      }
+
+    	function input0_input_handler() {
+    		title = this.value;
+    		$$invalidate('title', title);
+    	}
+
+    	function input1_input_handler() {
+    		subtitle = this.value;
+    		$$invalidate('subtitle', subtitle);
+    	}
+
+    	function input2_input_handler() {
+    		description = this.value;
+    		$$invalidate('description', description);
+    	}
+
+    	function input3_input_handler() {
+    		imageUrl = this.value;
+    		$$invalidate('imageUrl', imageUrl);
+    	}
+
+    	function input4_input_handler() {
+    		address = this.value;
+    		$$invalidate('address', address);
+    	}
+
+    	function input5_input_handler() {
+    		contactEmail = this.value;
+    		$$invalidate('contactEmail', contactEmail);
+    	}
+
+    	return {
+    		title,
+    		subtitle,
+    		description,
+    		imageUrl,
+    		address,
+    		contactEmail,
+    		formValid,
+    		meetups,
+    		addMeetup,
+    		checkFormValidity,
+    		input0_input_handler,
+    		input1_input_handler,
+    		input2_input_handler,
+    		input3_input_handler,
+    		input4_input_handler,
+    		input5_input_handler
+    	};
     }
 
     class App extends SvelteComponentDev {

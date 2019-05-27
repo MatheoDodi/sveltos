@@ -8,7 +8,7 @@
     padding: 1rem 8rem;
     margin-top: 4rem;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
     grid-column-gap: 1rem;
     grid-row-gap: 1.5rem;
   }
@@ -16,7 +16,7 @@
 
 <div class="meetups-container">
 
-  {#each meetups as { id, title, subtitle, description, imageUrl, address, contactEmail }, index (id)}
+  {#each meetups as { id, title, subtitle, description, imageUrl, address, contactEmail } (id)}
     <MeetupItem
       {id}
       {title}
