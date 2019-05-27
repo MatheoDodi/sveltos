@@ -3,6 +3,8 @@
 
   import PrimaryButton from "../../../Components/PrimaryButton.svelte";
   import SecondaryButton from "../../../Components/SecondaryButton.svelte";
+  import Badge from "../../../Components/Badge.svelte";
+
   export let id,
     title,
     subtitle,
@@ -115,9 +117,15 @@
 <article data-id={snapId} class:favorite>
   <div class="image" style={`background-image: url(${snapImageUrl})`} />
   <div class="content">
-    <h1>{snapTitle}</h1>
+    <h1>
+       {snapTitle}
+      {#if favorite}
+        <Badge>Favorite</Badge>
+      {/if}
+    </h1>
     <h2>{snapSubtitle}</h2>
     <p>{snapDescription}</p>
+
     <a href={`mailto:${snapContactEmail}`}> {snapContactEmail} </a>
     <footer>
       <PrimaryButton onClick={showMore} content="See Details" />

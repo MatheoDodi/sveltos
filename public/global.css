@@ -18,3 +18,12 @@ body {
   padding: 0;
   background: #f5f7fa;
 }
+
+a {
+  text-decoration: none;
+  color: white;
+}
+
+a:hover {
+  color: rgb(219, 219, 219);
+}
