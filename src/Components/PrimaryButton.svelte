@@ -1,10 +1,5 @@
 <script>
   export let content;
-  export let onClick;
-
-  function handleClickEvent(e) {
-    onClick(e);
-  }
 </script>
 
 <style>
@@ -28,4 +23,4 @@
   }
 </style>
 
-<button on:click|preventDefault={handleClickEvent}>{content}</button>
+<button on:click|preventDefault>{content}</button>

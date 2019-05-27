@@ -34,7 +34,16 @@
   }
 
   function showMore() {
-    snapDescription = "Hi!";
+    dispatch("toggleModal", {
+      snapId,
+      snapTitle,
+      snapSubtitle,
+      snapDescription,
+      snapAddress,
+      snapImageUrl,
+      snapContactEmail,
+      favorite
+    });
   }
 
   function handleFavorite() {
@@ -128,7 +137,7 @@
 
     <a href={`mailto:${snapContactEmail}`}> {snapContactEmail} </a>
     <footer>
-      <PrimaryButton onClick={showMore} content="See Details" />
+      <PrimaryButton on:click={showMore} content="See Details" />
       <SecondaryButton
         content={favorite ? 'Remove from Favorites' : 'Favorite'}
         on:click={handleFavorite} />

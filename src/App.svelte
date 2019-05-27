@@ -1,49 +1,16 @@
 <script>
   import { Router, Route } from "svelte-routing";
 
+  import meetupsStore from "./stores/meetupsStore.js";
   import Header from "./Components/Header.svelte";
   import MeetupsList from "./Containers/MeetupsList/MeetupsList.svelte";
   import EditMeetup from "./Containers/EditMeetup/EditMeetup.svelte";
+  import Modal from "./Components/Modal.svelte";
 
   export let url = "";
-  let meetups = [
-    {
-      id: "m1",
-      title: "Coding Bootcamp",
-      subtitle: "Learn to code in 2 hours",
-      description:
-        "In this meetup we will have some experts in the web development community that will help you teach how to code! We will be creating 3 websites and we'll be having a lot of fun!",
-      imageUrl:
-        "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
-      address: "9200 Irvine Center Dr, Irvine, CA 92618",
-      contactEmail: "support@learningfuze.com",
-      favorite: false
-    },
-    {
-      id: "m2",
-      title: "Coffee & Code OC",
-      subtitle: "Let's talk about code!",
-      description:
-        "Lot's of code and good coffee, what's not to like?! Be there!",
-      imageUrl:
-        "https://s3-media1.fl.yelpcdn.com/bphoto/urKT6cl0DR3tDNFQlRKJ6g/o.jpg",
-      address: " 18100 Culver Dr, Irvine, CA 92612",
-      contactEmail: "support@coffee&code.com",
-      favorite: false
-    },
-    {
-      id: "m3",
-      title: "Coding Bootcamp",
-      subtitle: "Learn to code in 2 hours",
-      description:
-        "In this meetup we will have some experts in the web development community that will help you teach how to code! We will be creating 3 websites and we'll be having a lot of fun!",
-      imageUrl:
-        "https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g",
-      address: "9200 Irvine Center Dr, Irvine, CA 92618",
-      contactEmail: "support@learningfuze.com",
-      favorite: false
-    }
-  ];
+  let meetups;
+  let showModal = false;
+  let selectedMeetup = null;
 
   function handleFavorite(e) {
     const id = e.detail;
@@ -53,6 +20,23 @@
     meetup.favorite = !meetup.favorite;
     meetups = meetups.slice(0);
   }
+
+  function toggleModal(e) {
+    let meetup = {
+      title: e.detail.snapTitle,
+      subtitle: e.detail.snapSubtitle,
+      description: e.detail.snapDescription,
+      imageUrl: e.detail.snapImageUrl,
+      address: e.detail.snapAddress,
+      contactEmail: e.detail.snapContactEmail,
+      favorite: e.detail.favorite
+    };
+    selectedMeetup = { ...meetup };
+    showModal = !showModal;
+    console.log(selectedMeetup);
+  }
+
+  meetupsStore.subscribe(mtps => (meetups = mtps));
 </script>
 
 <style>
@@ -66,9 +50,13 @@
   <main>
     <Route path="create" component={EditMeetup} />
     <Route path="/">
-      <MeetupsList {meetups} on:toggleFavorite={handleFavorite} />
+      {#if showModal}
+        <Modal {...selectedMeetup} />
+      {/if}
+      <MeetupsList
+        {meetups}
+        on:toggleFavorite={handleFavorite}
+        on:toggleModal={toggleModal} />
     </Route>
-    <!-- <EditMeetup />
-    <MeetupsList {meetups} on:toggleFavorite={handleFavorite} /> -->
   </main>
 </Router>

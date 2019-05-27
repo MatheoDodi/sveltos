@@ -1,4 +1,7 @@
 <script>
+  import { navigate } from "svelte-routing";
+  import meetupsStore from "../../stores/meetupsStore.js";
+
   let title = "";
   let subtitle = "";
   let description = "";
@@ -19,7 +22,11 @@
       contactEmail,
       favorite: false
     };
-    meetups = [newMeetup, ...meetups];
+
+    meetupsStore.update(meetups => {
+      return [...meetups, newMeetup];
+    });
+    navigate("/", { replace: true });
     clearInputs();
   }
 
