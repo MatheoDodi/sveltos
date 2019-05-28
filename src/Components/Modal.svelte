@@ -1,17 +1,22 @@
 <script>
+  import { onMount } from "svelte";
   import PrimaryButton from "./PrimaryButton.svelte";
   import SecondaryButton from "./SecondaryButton.svelte";
   import Badge from "./Badge.svelte";
 
-  export let favorite,
-    title,
-    subtitle,
-    description,
-    imageUrl,
-    contactEmail,
-    address;
+  export let selectedMeetup;
+  let meetup = null;
 
-  console.log(title);
+  onMount(() => {
+    fetch(
+      `http://cors-anywhere.herokuapp.com/api.meetup.com/2/event/${selectedMeetup}?key=655078484b4e2d716365697571b69`
+    )
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        meetup = data;
+      });
+  });
 </script>
 
 <style>
@@ -30,7 +35,7 @@
     background: white;
     width: 550px;
     height: 700px;
-    border-radius: 10px;
+    border-radius: 5px;
     overflow: hidden;
     overflow-y: scroll;
   }
@@ -80,30 +85,26 @@
   }
 </style>
 
-<div class="backdrop">
-  <div class="modal">
-    <div
-      class="background-image"
-      style={`background-image: url(${imageUrl})`} />
-    <div class="content">
-      <h1>
-         {title}
-        {#if favorite}
-          <Badge>Favorite</Badge>
-        {/if}
-      </h1>
-      <h2>{subtitle}</h2>
-      <p>{description}</p>
-
-      <a href={`mailto:${contactEmail}`}> {contactEmail} </a>
-      <footer>
-        <PrimaryButton
-          onClick={() => console.log('clicked')}
-          content="See Details" />
-        <SecondaryButton
-          content={favorite ? 'Remove from Favorites' : 'Favorite'}
-          on:click={() => {}} />
-      </footer>
+{#if meetup}
+  <div class="backdrop">
+    <div class="modal">
+      <div
+        class="background-image"
+        style={`background-image: url(${meetup.photo_url})`} />
+      <div class="content">
+        <h1> {meetup.name} </h1>
+        <h2>{new Date(meetup.time).toString()}</h2>
+        {@html meetup.description}
+        <a href={meetup.event_url}> {meetup.event_url} </a>
+        <footer>
+          <PrimaryButton
+            onClick={() => console.log('clicked')}
+            content="See Details" />
+          <SecondaryButton content={'Testing'} on:click={() => {}} />
+        </footer>
+      </div>
     </div>
   </div>
-</div>
+{:else}
+  <div>loading</div>
+{/if}

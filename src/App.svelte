@@ -11,30 +11,11 @@
   export let url = "";
   let meetups;
   let showModal = false;
-  let selectedMeetup = null;
-
-  function handleFavorite(e) {
-    const id = e.detail;
-
-    const meetup = meetups.find(mtup => mtup.id === id);
-    console.log(meetup);
-    meetup.favorite = !meetup.favorite;
-    meetups = meetups.slice(0);
-  }
+  let selectedMeetup = "";
 
   function toggleModal(e) {
-    let meetup = {
-      title: e.detail.snapTitle,
-      subtitle: e.detail.snapSubtitle,
-      description: e.detail.description,
-      imageUrl: e.detail.snapImageUrl,
-      address: e.detail.snapAddress,
-      contactEmail: e.detail.snapContactEmail,
-      favorite: e.detail.favorite
-    };
-    selectedMeetup = { ...meetup };
+    selectedMeetup = e.detail;
     showModal = !showModal;
-    console.log(selectedMeetup);
   }
   onMount(() => {
     fetch(
@@ -48,9 +29,9 @@
       .then(res => res.json())
       .then(data => {
         meetups = [...data.events];
-        // meetupsStore.update(mtps => {
-        //   return [...data.events];
-        // });
+        meetupsStore.update(mtps => {
+          return [...data.events];
+        });
       })
       .catch(err => console.log(err));
   });
@@ -65,16 +46,13 @@
 <Router {url}>
   <Header />
   <main>
-    <Route path="create" component={EditMeetup} />
+    <!-- <Route path="create" component={EditMeetup} /> -->
     <Route path="/">
       {#if showModal}
-        <Modal {...selectedMeetup} />
+        <Modal {selectedMeetup} />
       {/if}
       {#if meetups}
-        <MeetupsList
-          {meetups}
-          on:toggleFavorite={handleFavorite}
-          on:toggleModal={toggleModal} />
+        <MeetupsList {meetups} on:toggleModal={toggleModal} />
       {/if}
     </Route>
   </main>

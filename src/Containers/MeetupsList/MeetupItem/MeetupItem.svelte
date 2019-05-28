@@ -37,20 +37,8 @@
   }
 
   function showMore() {
-    // dispatch("toggleModal", {
-    //   snapId,
-    //   snapTitle,
-    //   snapSubtitle,
-    //   description,
-    //   snapAddress,
-    //   snapImageUrl,
-    //   snapContactEmail,
-    //   favorite
-    // });
-  }
-
-  function handleFavorite() {
-    dispatch("toggleFavorite", snapId);
+    console.log(id);
+    dispatch("toggleModal", id);
   }
 </script>
 
@@ -112,7 +100,7 @@
     <a href={link}> {link} </a>
     <footer>
       <PrimaryButton on:click={showMore} content="See Details" />
-      <SecondaryButton content={'Attend'} on:click={handleFavorite} />
+      <SecondaryButton content={'Attend'} />
     </footer>
   </div>
 </article>

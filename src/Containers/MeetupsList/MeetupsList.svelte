@@ -16,6 +16,6 @@
 
 <div class="meetups-container">
   {#each meetups as meetup (meetup.id)}
-    <MeetupItem {...meetup} on:toggleFavorite on:toggleModal />
+    <MeetupItem {...meetup} on:toggleModal />
   {/each}
 </div>
