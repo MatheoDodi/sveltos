@@ -5,45 +5,48 @@
   import SecondaryButton from "../../../Components/SecondaryButton.svelte";
   import Badge from "../../../Components/Badge.svelte";
 
-  export let id,
-    title,
-    subtitle,
-    description,
-    imageUrl,
-    address,
-    contactEmail,
-    favorite;
+  export let created,
+    duration,
+    id,
+    name,
+    date_in_series_pattern,
+    status,
+    time,
+    local_date,
+    local_time,
+    yes_rsvp_count,
+    link,
+    description;
 
+  console.log(description);
   const dispatch = createEventDispatcher();
-  const snapId = id;
-  const snapTitle = title;
-  const snapSubtitle = subtitle;
-  let snapDescription = description;
-  const snapImageUrl = imageUrl;
-  const snapAddress = address;
-  const snapContactEmail = contactEmail;
+  let snapDescription;
 
   // Check to see if description is too long
-  if (snapDescription.split(" ").length > 15) {
-    // Trim description
-    snapDescription =
-      description
-        .split(" ")
-        .slice(0, 16)
-        .join(" ") + "...";
+  if (description) {
+    if (description.split(" ").length > 15) {
+      // Trim description
+      snapDescription =
+        description
+          .split(" ")
+          .slice(0, 10)
+          .join(" ") + "...</p>";
+    } else {
+      snapDescription = description;
+    }
   }
 
   function showMore() {
-    dispatch("toggleModal", {
-      snapId,
-      snapTitle,
-      snapSubtitle,
-      snapDescription,
-      snapAddress,
-      snapImageUrl,
-      snapContactEmail,
-      favorite
-    });
+    // dispatch("toggleModal", {
+    //   snapId,
+    //   snapTitle,
+    //   snapSubtitle,
+    //   description,
+    //   snapAddress,
+    //   snapImageUrl,
+    //   snapContactEmail,
+    //   favorite
+    // });
   }
 
   function handleFavorite() {
@@ -69,17 +72,8 @@
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   }
 
-  .image {
-    flex-basis: 35%;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    position: relative;
-  }
-
   .content {
     padding: 1rem;
-    flex-basis: 65%;
     display: flex;
     flex-direction: column;
   }
@@ -93,12 +87,8 @@
     margin-top: 0;
     margin-bottom: 20px;
     font-weight: lighter;
-  }
-
-  .content p {
-    margin-top: 0;
-    margin-bottom: 0;
-    color: #829ab1;
+    font-size: 1rem;
+    color: #3e4c59;
   }
 
   .content footer {
@@ -112,35 +102,17 @@
   a:hover {
     color: #4098d7;
   }
-
-  .favorite {
-    box-shadow: 0 4px 6px 2px rgba(163, 105, 251, 0.25),
-      0 2px 4px -1px rgba(163, 105, 251, 0.15);
-  }
-
-  .favorite:hover {
-    box-shadow: 0 25px 50px -12px rgba(163, 105, 251, 0.4);
-  }
 </style>
 
-<article data-id={snapId} class:favorite>
-  <div class="image" style={`background-image: url(${snapImageUrl})`} />
+<article data-id={id}>
   <div class="content">
-    <h1>
-       {snapTitle}
-      {#if favorite}
-        <Badge>Favorite</Badge>
-      {/if}
-    </h1>
-    <h2>{snapSubtitle}</h2>
-    <p>{snapDescription}</p>
-
-    <a href={`mailto:${snapContactEmail}`}> {snapContactEmail} </a>
+    <h1> {name} </h1>
+    <h2>{local_date}, {local_time}</h2>
+    {@html snapDescription}
+    <a href={link}> {link} </a>
     <footer>
       <PrimaryButton on:click={showMore} content="See Details" />
-      <SecondaryButton
-        content={favorite ? 'Remove from Favorites' : 'Favorite'}
-        on:click={handleFavorite} />
+      <SecondaryButton content={'Attend'} on:click={handleFavorite} />
     </footer>
   </div>
 </article>

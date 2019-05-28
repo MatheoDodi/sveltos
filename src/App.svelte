@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { Router, Route } from "svelte-routing";
 
   import meetupsStore from "./stores/meetupsStore.js";
@@ -25,7 +26,7 @@
     let meetup = {
       title: e.detail.snapTitle,
       subtitle: e.detail.snapSubtitle,
-      description: e.detail.snapDescription,
+      description: e.detail.description,
       imageUrl: e.detail.snapImageUrl,
       address: e.detail.snapAddress,
       contactEmail: e.detail.snapContactEmail,
@@ -35,13 +36,29 @@
     showModal = !showModal;
     console.log(selectedMeetup);
   }
-
-  meetupsStore.subscribe(mtps => (meetups = mtps));
+  onMount(() => {
+    fetch(
+      "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
+      {
+        headers: {
+          origin: "x-requested-with"
+        }
+      }
+    )
+      .then(res => res.json())
+      .then(data => {
+        meetups = [...data.events];
+        // meetupsStore.update(mtps => {
+        //   return [...data.events];
+        // });
+      })
+      .catch(err => console.log(err));
+  });
 </script>
 
 <style>
   main {
-    margin-top: 4.5rem;
+    margin-top: 4rem;
   }
 </style>
 
@@ -53,10 +70,12 @@
       {#if showModal}
         <Modal {...selectedMeetup} />
       {/if}
-      <MeetupsList
-        {meetups}
-        on:toggleFavorite={handleFavorite}
-        on:toggleModal={toggleModal} />
+      {#if meetups}
+        <MeetupsList
+          {meetups}
+          on:toggleFavorite={handleFavorite}
+          on:toggleModal={toggleModal} />
+      {/if}
     </Route>
   </main>
 </Router>

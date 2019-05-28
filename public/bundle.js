@@ -66,6 +66,11 @@ var app = (function () {
     function detach(node) {
         node.parentNode.removeChild(node);
     }
+    function detach_between(before, after) {
+        while (before.nextSibling && before.nextSibling !== after) {
+            before.parentNode.removeChild(before.nextSibling);
+        }
+    }
     function element(name) {
         return document.createElement(name);
     }
@@ -115,9 +120,6 @@ var app = (function () {
         data = '' + data;
         if (text.data !== data)
             text.data = data;
-    }
-    function toggle_class(element, name, toggle) {
-        element.classList[toggle ? 'add' : 'remove'](name);
     }
     function custom_event(type, detail) {
         const e = document.createEvent('CustomEvent');
@@ -1822,14 +1824,44 @@ var app = (function () {
       },
       {
         id: 'm3',
-        title: 'Coding Bootcamp',
-        subtitle: 'Learn to code in 2 hours',
-        description:
-          "In this meetup we will have some experts in the web development community that will help you teach how to code! We will be creating 3 websites and we'll be having a lot of fun!",
+        title: 'HTML & CSS Fundementals',
+        subtitle: 'Learn everything about HTML & CSS!',
+        description: `Join us at our Los Angeles HQ in Venice master the fundamentals of HTML and CSS! This workshop is designed specifically with beginners in mind! To get the full experience we recommend coming onsite, however a live-stream will be available if you’re unable to make it.
+
+      This workshop will be a combination of live interactive lecture and pair programming through challenges! You will walk away with a new understanding of the core elements that make up HTML to add content to a web page, and the fundamental pieces of CSS to bring it to life.
+      
+      We’ll cover the concepts that are the foundation of all web development so you can confidently use them as you work on harder concepts to come.
+      
+      Specifically:
+      
+      - Text elements (headings, paragraphs, lists)
+      
+      - Division elements
+      
+      - Styling Selectors (elements, class and id)
+      
+      Price: Always free!
+      
+      Parking Info: If you’re attending in person we have free parking for the workshop in the lot.
+      
+      Online Info: Please join us for the online stream of the workshop here: https://codesmith.io/event-signin/325?ol=t (online start time may vary by 30 mins).
+      
+      Experience Level:
+      All experience levels welcome. We recommend getting started on our free JavaScript learning platform CSX (https://csx.codesmith.io/) and working on the Precourse unit before the workshop.
+      
+      We offer free JavaScript workshops several times a week!
+      
+      Typically our weekly schedule is:
+      
+      - Tuesdays: JavaScript The Easier Parts (In-person & Online)
+      
+      - Wednesdays: Build A Web App (In-person & Online) & JavaScript The Hard Parts (Online Only)
+      
+      - Thursdays: JavaScript The Hard Parts (In-person & Online)`,
         imageUrl:
-          'https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g',
-        address: '9200 Irvine Center Dr, Irvine, CA 92618',
-        contactEmail: 'support@learningfuze.com',
+          'https://cdn-images-1.medium.com/max/1600/1*UAM0cE0Dko0zTTK443fKZg.jpeg',
+        address: '1600 Main St, Venice, CA',
+        contactEmail: 'support@codesmith.com',
         favorite: false
       }
     ]);
@@ -2232,80 +2264,17 @@ var app = (function () {
 
     const file$5 = "src/Containers/MeetupsList/MeetupItem/MeetupItem.svelte";
 
-    // (131:6) {#if favorite}
-    function create_if_block$1(ctx) {
-    	var current;
-
-    	var badge = new Badge({
-    		props: {
-    		$$slots: { default: [create_default_slot$1] },
-    		$$scope: { ctx }
-    	},
-    		$$inline: true
-    	});
-
-    	return {
-    		c: function create() {
-    			badge.$$.fragment.c();
-    		},
-
-    		m: function mount(target, anchor) {
-    			mount_component(badge, target, anchor);
-    			current = true;
-    		},
-
-    		i: function intro(local) {
-    			if (current) return;
-    			badge.$$.fragment.i(local);
-
-    			current = true;
-    		},
-
-    		o: function outro(local) {
-    			badge.$$.fragment.o(local);
-    			current = false;
-    		},
-
-    		d: function destroy(detaching) {
-    			badge.$destroy(detaching);
-    		}
-    	};
-    }
-
-    // (132:8) <Badge>
-    function create_default_slot$1(ctx) {
-    	var t;
-
-    	return {
-    		c: function create() {
-    			t = text("Favorite");
-    		},
-
-    		m: function mount(target, anchor) {
-    			insert(target, t, anchor);
-    		},
-
-    		d: function destroy(detaching) {
-    			if (detaching) {
-    				detach(t);
-    			}
-    		}
-    	};
-    }
-
     function create_fragment$7(ctx) {
-    	var article, div0, div0_style_value, t0, div1, h1, t1, t2, t3, h2, t4, t5, p, t6, t7, a, t8, a_href_value, t9, footer, t10, current;
-
-    	var if_block = (ctx.favorite) && create_if_block$1(ctx);
+    	var article, div, h1, t0, t1, h2, t2, t3, t4, t5, raw_before, raw_after, t6, a, t7, t8, footer, t9, current;
 
     	var primarybutton = new PrimaryButton({
     		props: { content: "See Details" },
     		$$inline: true
     	});
-    	primarybutton.$on("click", ctx.showMore);
+    	primarybutton.$on("click", showMore);
 
     	var secondarybutton = new SecondaryButton({
-    		props: { content: ctx.favorite ? 'Remove from Favorites' : 'Favorite' },
+    		props: { content: 'Attend' },
     		$$inline: true
     	});
     	secondarybutton.$on("click", ctx.handleFavorite);
@@ -2313,47 +2282,39 @@ var app = (function () {
     	return {
     		c: function create() {
     			article = element("article");
-    			div0 = element("div");
-    			t0 = space();
-    			div1 = element("div");
+    			div = element("div");
     			h1 = element("h1");
-    			t1 = text(ctx.snapTitle);
-    			t2 = space();
-    			if (if_block) if_block.c();
-    			t3 = space();
+    			t0 = text(ctx.name);
+    			t1 = space();
     			h2 = element("h2");
-    			t4 = text(ctx.snapSubtitle);
+    			t2 = text(ctx.local_date);
+    			t3 = text(", ");
+    			t4 = text(ctx.local_time);
     			t5 = space();
-    			p = element("p");
-    			t6 = text(ctx.snapDescription);
-    			t7 = space();
+    			raw_before = element('noscript');
+    			raw_after = element('noscript');
+    			t6 = space();
     			a = element("a");
-    			t8 = text(ctx.snapContactEmail);
-    			t9 = space();
+    			t7 = text(ctx.link);
+    			t8 = space();
     			footer = element("footer");
     			primarybutton.$$.fragment.c();
-    			t10 = space();
+    			t9 = space();
     			secondarybutton.$$.fragment.c();
-    			div0.className = "image svelte-irirdx";
-    			div0.style.cssText = div0_style_value = `background-image: url(${ctx.snapImageUrl})`;
-    			add_location(div0, file$5, 126, 2, 2449);
-    			h1.className = "svelte-irirdx";
-    			add_location(h1, file$5, 128, 4, 2548);
-    			h2.className = "svelte-irirdx";
-    			add_location(h2, file$5, 134, 4, 2651);
-    			p.className = "svelte-irirdx";
-    			add_location(p, file$5, 135, 4, 2679);
-    			a.href = a_href_value = `mailto:${ctx.snapContactEmail}`;
-    			a.className = "svelte-irirdx";
-    			add_location(a, file$5, 137, 4, 2709);
-    			footer.className = "svelte-irirdx";
-    			add_location(footer, file$5, 138, 4, 2777);
-    			div1.className = "content svelte-irirdx";
-    			add_location(div1, file$5, 127, 2, 2522);
-    			article.dataset.id = ctx.snapId;
-    			article.className = "svelte-irirdx";
-    			toggle_class(article, "favorite", ctx.favorite);
-    			add_location(article, file$5, 125, 0, 2405);
+    			h1.className = "svelte-1szhzzw";
+    			add_location(h1, file$5, 108, 4, 2033);
+    			h2.className = "svelte-1szhzzw";
+    			add_location(h2, file$5, 109, 4, 2055);
+    			a.href = ctx.link;
+    			a.className = "svelte-1szhzzw";
+    			add_location(a, file$5, 111, 4, 2123);
+    			footer.className = "svelte-1szhzzw";
+    			add_location(footer, file$5, 112, 4, 2155);
+    			div.className = "content svelte-1szhzzw";
+    			add_location(div, file$5, 107, 2, 2007);
+    			article.dataset.id = ctx.id;
+    			article.className = "svelte-1szhzzw";
+    			add_location(article, file$5, 106, 0, 1982);
     		},
 
     		l: function claim(nodes) {
@@ -2362,68 +2323,59 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			insert(target, article, anchor);
-    			append(article, div0);
-    			append(article, t0);
-    			append(article, div1);
-    			append(div1, h1);
-    			append(h1, t1);
-    			append(h1, t2);
-    			if (if_block) if_block.m(h1, null);
-    			append(div1, t3);
-    			append(div1, h2);
+    			append(article, div);
+    			append(div, h1);
+    			append(h1, t0);
+    			append(div, t1);
+    			append(div, h2);
+    			append(h2, t2);
+    			append(h2, t3);
     			append(h2, t4);
-    			append(div1, t5);
-    			append(div1, p);
-    			append(p, t6);
-    			append(div1, t7);
-    			append(div1, a);
-    			append(a, t8);
-    			append(div1, t9);
-    			append(div1, footer);
+    			append(div, t5);
+    			append(div, raw_before);
+    			raw_before.insertAdjacentHTML("afterend", ctx.snapDescription);
+    			append(div, raw_after);
+    			append(div, t6);
+    			append(div, a);
+    			append(a, t7);
+    			append(div, t8);
+    			append(div, footer);
     			mount_component(primarybutton, footer, null);
-    			append(footer, t10);
+    			append(footer, t9);
     			mount_component(secondarybutton, footer, null);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			if (ctx.favorite) {
-    				if (!if_block) {
-    					if_block = create_if_block$1(ctx);
-    					if_block.c();
-    					if_block.i(1);
-    					if_block.m(h1, null);
-    				} else {
-    									if_block.i(1);
-    				}
-    			} else if (if_block) {
-    				group_outros();
-    				on_outro(() => {
-    					if_block.d(1);
-    					if_block = null;
-    				});
+    			if (!current || changed.name) {
+    				set_data(t0, ctx.name);
+    			}
 
-    				if_block.o(1);
-    				check_outros();
+    			if (!current || changed.local_date) {
+    				set_data(t2, ctx.local_date);
+    			}
+
+    			if (!current || changed.local_time) {
+    				set_data(t4, ctx.local_time);
     			}
 
     			if (!current || changed.snapDescription) {
-    				set_data(t6, ctx.snapDescription);
+    				detach_between(raw_before, raw_after);
+    				raw_before.insertAdjacentHTML("afterend", ctx.snapDescription);
     			}
 
-    			var secondarybutton_changes = {};
-    			if (changed.favorite) secondarybutton_changes.content = ctx.favorite ? 'Remove from Favorites' : 'Favorite';
-    			secondarybutton.$set(secondarybutton_changes);
+    			if (!current || changed.link) {
+    				set_data(t7, ctx.link);
+    				a.href = ctx.link;
+    			}
 
-    			if (changed.favorite) {
-    				toggle_class(article, "favorite", ctx.favorite);
+    			if (!current || changed.id) {
+    				article.dataset.id = ctx.id;
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			if (if_block) if_block.i();
-
     			primarybutton.$$.fragment.i(local);
 
     			secondarybutton.$$.fragment.i(local);
@@ -2432,7 +2384,6 @@ var app = (function () {
     		},
 
     		o: function outro(local) {
-    			if (if_block) if_block.o();
     			primarybutton.$$.fragment.o(local);
     			secondarybutton.$$.fragment.o(local);
     			current = false;
@@ -2443,8 +2394,6 @@ var app = (function () {
     				detach(article);
     			}
 
-    			if (if_block) if_block.d();
-
     			primarybutton.$destroy();
 
     			secondarybutton.$destroy();
@@ -2452,79 +2401,80 @@ var app = (function () {
     	};
     }
 
+    function showMore() {
+      // dispatch("toggleModal", {
+      //   snapId,
+      //   snapTitle,
+      //   snapSubtitle,
+      //   description,
+      //   snapAddress,
+      //   snapImageUrl,
+      //   snapContactEmail,
+      //   favorite
+      // });
+    }
+
     function instance$6($$self, $$props, $$invalidate) {
     	
 
-      let { id, title, subtitle, description, imageUrl, address, contactEmail, favorite } = $$props;
+      let { created, duration, id, name, date_in_series_pattern, status, time, local_date, local_time, yes_rsvp_count, link, description } = $$props;
 
+      console.log(description);
       const dispatch = createEventDispatcher();
-      const snapId = id;
-      const snapTitle = title;
-      const snapSubtitle = subtitle;
-      let snapDescription = description;
-      const snapImageUrl = imageUrl;
-      const snapAddress = address;
-      const snapContactEmail = contactEmail;
+      let snapDescription;
 
       // Check to see if description is too long
-      if (snapDescription.split(" ").length > 15) {
-        // Trim description
-        $$invalidate('snapDescription', snapDescription =
-          description
-            .split(" ")
-            .slice(0, 16)
-            .join(" ") + "...");
-      }
-
-      function showMore() {
-        dispatch("toggleModal", {
-          snapId,
-          snapTitle,
-          snapSubtitle,
-          snapDescription,
-          snapAddress,
-          snapImageUrl,
-          snapContactEmail,
-          favorite
-        });
+      if (description) {
+        if (description.split(" ").length > 15) {
+          // Trim description
+          $$invalidate('snapDescription', snapDescription =
+            description
+              .split(" ")
+              .slice(0, 10)
+              .join(" ") + "...</p>");
+        } else {
+          $$invalidate('snapDescription', snapDescription = description);
+        }
       }
 
       function handleFavorite() {
         dispatch("toggleFavorite", snapId);
       }
 
-    	const writable_props = ['id', 'title', 'subtitle', 'description', 'imageUrl', 'address', 'contactEmail', 'favorite'];
+    	const writable_props = ['created', 'duration', 'id', 'name', 'date_in_series_pattern', 'status', 'time', 'local_date', 'local_time', 'yes_rsvp_count', 'link', 'description'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key)) console.warn(`<MeetupItem> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$set = $$props => {
+    		if ('created' in $$props) $$invalidate('created', created = $$props.created);
+    		if ('duration' in $$props) $$invalidate('duration', duration = $$props.duration);
     		if ('id' in $$props) $$invalidate('id', id = $$props.id);
-    		if ('title' in $$props) $$invalidate('title', title = $$props.title);
-    		if ('subtitle' in $$props) $$invalidate('subtitle', subtitle = $$props.subtitle);
+    		if ('name' in $$props) $$invalidate('name', name = $$props.name);
+    		if ('date_in_series_pattern' in $$props) $$invalidate('date_in_series_pattern', date_in_series_pattern = $$props.date_in_series_pattern);
+    		if ('status' in $$props) $$invalidate('status', status = $$props.status);
+    		if ('time' in $$props) $$invalidate('time', time = $$props.time);
+    		if ('local_date' in $$props) $$invalidate('local_date', local_date = $$props.local_date);
+    		if ('local_time' in $$props) $$invalidate('local_time', local_time = $$props.local_time);
+    		if ('yes_rsvp_count' in $$props) $$invalidate('yes_rsvp_count', yes_rsvp_count = $$props.yes_rsvp_count);
+    		if ('link' in $$props) $$invalidate('link', link = $$props.link);
     		if ('description' in $$props) $$invalidate('description', description = $$props.description);
-    		if ('imageUrl' in $$props) $$invalidate('imageUrl', imageUrl = $$props.imageUrl);
-    		if ('address' in $$props) $$invalidate('address', address = $$props.address);
-    		if ('contactEmail' in $$props) $$invalidate('contactEmail', contactEmail = $$props.contactEmail);
-    		if ('favorite' in $$props) $$invalidate('favorite', favorite = $$props.favorite);
     	};
 
     	return {
+    		created,
+    		duration,
     		id,
-    		title,
-    		subtitle,
+    		name,
+    		date_in_series_pattern,
+    		status,
+    		time,
+    		local_date,
+    		local_time,
+    		yes_rsvp_count,
+    		link,
     		description,
-    		imageUrl,
-    		address,
-    		contactEmail,
-    		favorite,
-    		snapId,
-    		snapTitle,
-    		snapSubtitle,
     		snapDescription,
-    		snapImageUrl,
-    		snapContactEmail,
-    		showMore,
     		handleFavorite
     	};
     }
@@ -2532,34 +2482,62 @@ var app = (function () {
     class MeetupItem extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$6, create_fragment$7, safe_not_equal, ["id", "title", "subtitle", "description", "imageUrl", "address", "contactEmail", "favorite"]);
+    		init(this, options, instance$6, create_fragment$7, safe_not_equal, ["created", "duration", "id", "name", "date_in_series_pattern", "status", "time", "local_date", "local_time", "yes_rsvp_count", "link", "description"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
+    		if (ctx.created === undefined && !('created' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'created'");
+    		}
+    		if (ctx.duration === undefined && !('duration' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'duration'");
+    		}
     		if (ctx.id === undefined && !('id' in props)) {
     			console.warn("<MeetupItem> was created without expected prop 'id'");
     		}
-    		if (ctx.title === undefined && !('title' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'title'");
+    		if (ctx.name === undefined && !('name' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'name'");
     		}
-    		if (ctx.subtitle === undefined && !('subtitle' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'subtitle'");
+    		if (ctx.date_in_series_pattern === undefined && !('date_in_series_pattern' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'date_in_series_pattern'");
+    		}
+    		if (ctx.status === undefined && !('status' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'status'");
+    		}
+    		if (ctx.time === undefined && !('time' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'time'");
+    		}
+    		if (ctx.local_date === undefined && !('local_date' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'local_date'");
+    		}
+    		if (ctx.local_time === undefined && !('local_time' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'local_time'");
+    		}
+    		if (ctx.yes_rsvp_count === undefined && !('yes_rsvp_count' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'yes_rsvp_count'");
+    		}
+    		if (ctx.link === undefined && !('link' in props)) {
+    			console.warn("<MeetupItem> was created without expected prop 'link'");
     		}
     		if (ctx.description === undefined && !('description' in props)) {
     			console.warn("<MeetupItem> was created without expected prop 'description'");
     		}
-    		if (ctx.imageUrl === undefined && !('imageUrl' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'imageUrl'");
-    		}
-    		if (ctx.address === undefined && !('address' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'address'");
-    		}
-    		if (ctx.contactEmail === undefined && !('contactEmail' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'contactEmail'");
-    		}
-    		if (ctx.favorite === undefined && !('favorite' in props)) {
-    			console.warn("<MeetupItem> was created without expected prop 'favorite'");
-    		}
+    	}
+
+    	get created() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set created(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get duration() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set duration(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
     	get id() {
@@ -2570,19 +2548,67 @@ var app = (function () {
     		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	get title() {
+    	get name() {
     		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set title(value) {
+    	set name(value) {
     		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	get subtitle() {
+    	get date_in_series_pattern() {
     		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set subtitle(value) {
+    	set date_in_series_pattern(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get status() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set status(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get time() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set time(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get local_date() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set local_date(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get local_time() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set local_time(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get yes_rsvp_count() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set yes_rsvp_count(value) {
+    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get link() {
+    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set link(value) {
     		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
@@ -2591,38 +2617,6 @@ var app = (function () {
     	}
 
     	set description(value) {
-    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get imageUrl() {
-    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set imageUrl(value) {
-    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get address() {
-    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set address(value) {
-    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get contactEmail() {
-    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set contactEmail(value) {
-    		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get favorite() {
-    		throw new Error("<MeetupItem>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set favorite(value) {
     		throw new Error("<MeetupItem>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -3142,13 +3136,13 @@ var app = (function () {
 
     const file$8 = "src/Components/Modal.svelte";
 
-    // (60:6) {#if favorite}
-    function create_if_block$2(ctx) {
+    // (91:8) {#if favorite}
+    function create_if_block$1(ctx) {
     	var current;
 
     	var badge = new Badge({
     		props: {
-    		$$slots: { default: [create_default_slot$2] },
+    		$$slots: { default: [create_default_slot$1] },
     		$$scope: { ctx }
     	},
     		$$inline: true
@@ -3182,8 +3176,8 @@ var app = (function () {
     	};
     }
 
-    // (61:8) <Badge>
-    function create_default_slot$2(ctx) {
+    // (92:10) <Badge>
+    function create_default_slot$1(ctx) {
     	var t;
 
     	return {
@@ -3204,9 +3198,9 @@ var app = (function () {
     }
 
     function create_fragment$a(ctx) {
-    	var div2, div0, t0, div1, h1, t1, t2, t3, h2, t4, t5, p, t6, t7, a, t8, a_href_value, t9, footer, t10, current;
+    	var div3, div2, div0, div0_style_value, t0, div1, h1, t1, t2, t3, h2, t4, t5, p, t6, t7, a, t8, a_href_value, t9, footer, t10, current;
 
-    	var if_block = (ctx.favorite) && create_if_block$2(ctx);
+    	var if_block = (ctx.favorite) && create_if_block$1(ctx);
 
     	var primarybutton = new PrimaryButton({
     		props: {
@@ -3224,6 +3218,7 @@ var app = (function () {
 
     	return {
     		c: function create() {
+    			div3 = element("div");
     			div2 = element("div");
     			div0 = element("div");
     			t0 = space();
@@ -3246,23 +3241,26 @@ var app = (function () {
     			primarybutton.$$.fragment.c();
     			t10 = space();
     			secondarybutton.$$.fragment.c();
-    			div0.className = "background-image";
-    			add_location(div0, file$8, 55, 2, 797);
-    			h1.className = "svelte-hhkmj";
-    			add_location(h1, file$8, 57, 4, 858);
-    			h2.className = "svelte-hhkmj";
-    			add_location(h2, file$8, 63, 4, 957);
-    			p.className = "svelte-hhkmj";
-    			add_location(p, file$8, 64, 4, 981);
+    			div0.className = "background-image svelte-18ljjlq";
+    			div0.style.cssText = div0_style_value = `background-image: url(${ctx.imageUrl})`;
+    			add_location(div0, file$8, 84, 4, 1340);
+    			h1.className = "svelte-18ljjlq";
+    			add_location(h1, file$8, 88, 6, 1462);
+    			h2.className = "svelte-18ljjlq";
+    			add_location(h2, file$8, 94, 6, 1573);
+    			p.className = "svelte-18ljjlq";
+    			add_location(p, file$8, 95, 6, 1599);
     			a.href = a_href_value = `mailto:${ctx.contactEmail}`;
-    			a.className = "svelte-hhkmj";
-    			add_location(a, file$8, 66, 4, 1007);
-    			footer.className = "svelte-hhkmj";
-    			add_location(footer, file$8, 67, 4, 1067);
-    			div1.className = "content svelte-hhkmj";
-    			add_location(div1, file$8, 56, 2, 832);
-    			div2.className = "modal";
-    			add_location(div2, file$8, 54, 0, 775);
+    			a.className = "svelte-18ljjlq";
+    			add_location(a, file$8, 97, 6, 1627);
+    			footer.className = "svelte-18ljjlq";
+    			add_location(footer, file$8, 98, 6, 1689);
+    			div1.className = "content svelte-18ljjlq";
+    			add_location(div1, file$8, 87, 4, 1434);
+    			div2.className = "modal svelte-18ljjlq";
+    			add_location(div2, file$8, 83, 2, 1316);
+    			div3.className = "backdrop svelte-18ljjlq";
+    			add_location(div3, file$8, 82, 0, 1291);
     		},
 
     		l: function claim(nodes) {
@@ -3270,7 +3268,8 @@ var app = (function () {
     		},
 
     		m: function mount(target, anchor) {
-    			insert(target, div2, anchor);
+    			insert(target, div3, anchor);
+    			append(div3, div2);
     			append(div2, div0);
     			append(div2, t0);
     			append(div2, div1);
@@ -3296,13 +3295,17 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
+    			if ((!current || changed.imageUrl) && div0_style_value !== (div0_style_value = `background-image: url(${ctx.imageUrl})`)) {
+    				div0.style.cssText = div0_style_value;
+    			}
+
     			if (!current || changed.title) {
     				set_data(t1, ctx.title);
     			}
 
     			if (ctx.favorite) {
     				if (!if_block) {
-    					if_block = create_if_block$2(ctx);
+    					if_block = create_if_block$1(ctx);
     					if_block.c();
     					if_block.i(1);
     					if_block.m(h1, null);
@@ -3361,7 +3364,7 @@ var app = (function () {
 
     		d: function destroy(detaching) {
     			if (detaching) {
-    				detach(div2);
+    				detach(div3);
     			}
 
     			if (if_block) if_block.d();
@@ -3505,8 +3508,8 @@ var app = (function () {
 
     const file$9 = "src/App.svelte";
 
-    // (53:6) {#if showModal}
-    function create_if_block$3(ctx) {
+    // (70:6) {#if showModal}
+    function create_if_block_1$1(ctx) {
     	var current;
 
     	var modal_spread_levels = [
@@ -3554,11 +3557,9 @@ var app = (function () {
     	};
     }
 
-    // (52:4) <Route path="/">
-    function create_default_slot_1$1(ctx) {
-    	var t, current;
-
-    	var if_block = (ctx.showModal) && create_if_block$3(ctx);
+    // (73:6) {#if meetups}
+    function create_if_block$2(ctx) {
+    	var current;
 
     	var meetupslist = new MeetupsList({
     		props: { meetups: ctx.meetups },
@@ -3569,40 +3570,15 @@ var app = (function () {
 
     	return {
     		c: function create() {
-    			if (if_block) if_block.c();
-    			t = space();
     			meetupslist.$$.fragment.c();
     		},
 
     		m: function mount(target, anchor) {
-    			if (if_block) if_block.m(target, anchor);
-    			insert(target, t, anchor);
     			mount_component(meetupslist, target, anchor);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			if (ctx.showModal) {
-    				if (if_block) {
-    					if_block.p(changed, ctx);
-    					if_block.i(1);
-    				} else {
-    					if_block = create_if_block$3(ctx);
-    					if_block.c();
-    					if_block.i(1);
-    					if_block.m(t.parentNode, t);
-    				}
-    			} else if (if_block) {
-    				group_outros();
-    				on_outro(() => {
-    					if_block.d(1);
-    					if_block = null;
-    				});
-
-    				if_block.o(1);
-    				check_outros();
-    			}
-
     			var meetupslist_changes = {};
     			if (changed.meetups) meetupslist_changes.meetups = ctx.meetups;
     			meetupslist.$set(meetupslist_changes);
@@ -3610,33 +3586,121 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			if (if_block) if_block.i();
-
     			meetupslist.$$.fragment.i(local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (if_block) if_block.o();
     			meetupslist.$$.fragment.o(local);
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			if (if_block) if_block.d(detaching);
-
-    			if (detaching) {
-    				detach(t);
-    			}
-
     			meetupslist.$destroy(detaching);
     		}
     	};
     }
 
-    // (48:0) <Router {url}>
-    function create_default_slot$3(ctx) {
+    // (69:4) <Route path="/">
+    function create_default_slot_1$1(ctx) {
+    	var t, if_block1_anchor, current;
+
+    	var if_block0 = (ctx.showModal) && create_if_block_1$1(ctx);
+
+    	var if_block1 = (ctx.meetups) && create_if_block$2(ctx);
+
+    	return {
+    		c: function create() {
+    			if (if_block0) if_block0.c();
+    			t = space();
+    			if (if_block1) if_block1.c();
+    			if_block1_anchor = empty();
+    		},
+
+    		m: function mount(target, anchor) {
+    			if (if_block0) if_block0.m(target, anchor);
+    			insert(target, t, anchor);
+    			if (if_block1) if_block1.m(target, anchor);
+    			insert(target, if_block1_anchor, anchor);
+    			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			if (ctx.showModal) {
+    				if (if_block0) {
+    					if_block0.p(changed, ctx);
+    					if_block0.i(1);
+    				} else {
+    					if_block0 = create_if_block_1$1(ctx);
+    					if_block0.c();
+    					if_block0.i(1);
+    					if_block0.m(t.parentNode, t);
+    				}
+    			} else if (if_block0) {
+    				group_outros();
+    				on_outro(() => {
+    					if_block0.d(1);
+    					if_block0 = null;
+    				});
+
+    				if_block0.o(1);
+    				check_outros();
+    			}
+
+    			if (ctx.meetups) {
+    				if (if_block1) {
+    					if_block1.p(changed, ctx);
+    					if_block1.i(1);
+    				} else {
+    					if_block1 = create_if_block$2(ctx);
+    					if_block1.c();
+    					if_block1.i(1);
+    					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
+    				}
+    			} else if (if_block1) {
+    				group_outros();
+    				on_outro(() => {
+    					if_block1.d(1);
+    					if_block1 = null;
+    				});
+
+    				if_block1.o(1);
+    				check_outros();
+    			}
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			if (if_block0) if_block0.i();
+    			if (if_block1) if_block1.i();
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			if (if_block0) if_block0.o();
+    			if (if_block1) if_block1.o();
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			if (if_block0) if_block0.d(detaching);
+
+    			if (detaching) {
+    				detach(t);
+    			}
+
+    			if (if_block1) if_block1.d(detaching);
+
+    			if (detaching) {
+    				detach(if_block1_anchor);
+    			}
+    		}
+    	};
+    }
+
+    // (65:0) <Router {url}>
+    function create_default_slot$2(ctx) {
     	var t0, main, t1, current;
 
     	var header = new Header({ $$inline: true });
@@ -3663,8 +3727,8 @@ var app = (function () {
     			route0.$$.fragment.c();
     			t1 = space();
     			route1.$$.fragment.c();
-    			main.className = "svelte-efloma";
-    			add_location(main, file$9, 49, 2, 1246);
+    			main.className = "svelte-y4fh0p";
+    			add_location(main, file$9, 66, 2, 1691);
     		},
 
     		m: function mount(target, anchor) {
@@ -3726,7 +3790,7 @@ var app = (function () {
     	var router = new Router({
     		props: {
     		url: ctx.url,
-    		$$slots: { default: [create_default_slot$3] },
+    		$$slots: { default: [create_default_slot$2] },
     		$$scope: { ctx }
     	},
     		$$inline: true
@@ -3775,24 +3839,24 @@ var app = (function () {
     	
 
       let { url = "" } = $$props;
-      let meetups$1;
+      let meetups;
       let showModal = false;
       let selectedMeetup = null;
 
       function handleFavorite(e) {
         const id = e.detail;
 
-        const meetup = meetups$1.find(mtup => mtup.id === id);
+        const meetup = meetups.find(mtup => mtup.id === id);
         console.log(meetup);
         meetup.favorite = !meetup.favorite;
-        $$invalidate('meetups', meetups$1 = meetups$1.slice(0));
+        $$invalidate('meetups', meetups = meetups.slice(0));
       }
 
       function toggleModal(e) {
         let meetup = {
           title: e.detail.snapTitle,
           subtitle: e.detail.snapSubtitle,
-          description: e.detail.snapDescription,
+          description: e.detail.description,
           imageUrl: e.detail.snapImageUrl,
           address: e.detail.snapAddress,
           contactEmail: e.detail.snapContactEmail,
@@ -3802,8 +3866,24 @@ var app = (function () {
         $$invalidate('showModal', showModal = !showModal);
         console.log(selectedMeetup);
       }
-
-      meetups.subscribe(mtps => { const $$result = (meetups$1 = mtps); $$invalidate('meetups', meetups$1); return $$result; });
+      onMount(() => {
+        fetch(
+          "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
+          {
+            headers: {
+              origin: "x-requested-with"
+            }
+          }
+        )
+          .then(res => res.json())
+          .then(data => {
+            $$invalidate('meetups', meetups = [...data.events]);
+            // meetupsStore.update(mtps => {
+            //   return [...data.events];
+            // });
+          })
+          .catch(err => console.log(err));
+      });
 
     	const writable_props = ['url'];
     	Object.keys($$props).forEach(key => {
@@ -3816,7 +3896,7 @@ var app = (function () {
 
     	return {
     		url,
-    		meetups: meetups$1,
+    		meetups,
     		showModal,
     		selectedMeetup,
     		handleFavorite,

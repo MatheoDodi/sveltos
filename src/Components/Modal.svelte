@@ -15,6 +15,34 @@
 </script>
 
 <style>
+  .backdrop {
+    height: 110vh;
+    position: fixed;
+    background: rgba(0, 0, 0, 0.7);
+    width: 100%;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+  }
+
+  .modal {
+    margin-top: 3rem;
+    background: white;
+    width: 550px;
+    height: 700px;
+    border-radius: 10px;
+    overflow: hidden;
+    overflow-y: scroll;
+  }
+
+  .background-image {
+    height: 35%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+  }
+
   .content {
     padding: 1rem;
     flex-basis: 65%;
@@ -52,26 +80,30 @@
   }
 </style>
 
-<div class="modal">
-  <div class="background-image" />
-  <div class="content">
-    <h1>
-       {title}
-      {#if favorite}
-        <Badge>Favorite</Badge>
-      {/if}
-    </h1>
-    <h2>{subtitle}</h2>
-    <p>{description}</p>
+<div class="backdrop">
+  <div class="modal">
+    <div
+      class="background-image"
+      style={`background-image: url(${imageUrl})`} />
+    <div class="content">
+      <h1>
+         {title}
+        {#if favorite}
+          <Badge>Favorite</Badge>
+        {/if}
+      </h1>
+      <h2>{subtitle}</h2>
+      <p>{description}</p>
 
-    <a href={`mailto:${contactEmail}`}> {contactEmail} </a>
-    <footer>
-      <PrimaryButton
-        onClick={() => console.log('clicked')}
-        content="See Details" />
-      <SecondaryButton
-        content={favorite ? 'Remove from Favorites' : 'Favorite'}
-        on:click={() => {}} />
-    </footer>
+      <a href={`mailto:${contactEmail}`}> {contactEmail} </a>
+      <footer>
+        <PrimaryButton
+          onClick={() => console.log('clicked')}
+          content="See Details" />
+        <SecondaryButton
+          content={favorite ? 'Remove from Favorites' : 'Favorite'}
+          on:click={() => {}} />
+      </footer>
+    </div>
   </div>
 </div>
