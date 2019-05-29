@@ -31,6 +31,7 @@ Fun fact: Svelte (Σβέλτος) means _fast_ in Greek!
 ### Built With
 
 - [SvelteJS](https://svelte.dev/docs)
+- Svelte-routing
 
 <!-- GETTING STARTED -->
 
