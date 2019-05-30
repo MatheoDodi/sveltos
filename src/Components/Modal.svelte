@@ -1,21 +1,17 @@
 <script>
+  import { fade } from "svelte/transition";
   import { onMount } from "svelte";
   import PrimaryButton from "./PrimaryButton.svelte";
   import SecondaryButton from "./SecondaryButton.svelte";
   import Badge from "./Badge.svelte";
 
   export let selectedMeetup;
-  let meetup = null;
 
-  onMount(() => {
-    fetch(
-      `http://cors-anywhere.herokuapp.com/api.meetup.com/2/event/${selectedMeetup}?key=655078484b4e2d716365697571b69`
-    )
-      .then(res => res.json())
-      .then(data => {
-        meetup = data;
-      });
-  });
+  let getMeetup = fetch(
+    `http://cors-anywhere.herokuapp.com/api.meetup.com/2/event/${selectedMeetup}?key=655078484b4e2d716365697571b69`
+  )
+    .then(res => res.json())
+    .then(data => data);
 </script>
 
 <style>
@@ -78,7 +74,7 @@
   }
 </style>
 
-{#if meetup}
+<!-- {#if meetup}
   <div class="backdrop" on:click>
     <div class="modal" on:click={e => e.stopPropagation()}>
       <div
@@ -100,4 +96,30 @@
   </div>
 {:else}
   <div>loading</div>
-{/if}
+{/if} -->
+
+{#await getMeetup}
+  <p>Loading Spinner!</p>
+{:then meetup}
+  <div transition:fade class="backdrop" on:click>
+    <div class="modal" on:click={e => e.stopPropagation()}>
+      <div
+        class="background-image"
+        style={`background-image: url(${meetup.photo_url})`} />
+      <div class="content">
+        <h1> {meetup.name} </h1>
+        <h2>{new Date(meetup.time).toString()}</h2>
+        {@html meetup.description}
+        <a href={meetup.event_url}> {meetup.event_url} </a>
+        <footer>
+          <PrimaryButton
+            onClick={() => console.log('clicked')}
+            content="See Details" />
+          <SecondaryButton content={'Testing'} on:click={() => {}} />
+        </footer>
+      </div>
+    </div>
+  </div>
+{:catch error}
+  <p>{error.message}</p>
+{/await}

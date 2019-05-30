@@ -4,6 +4,7 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    const identity = x => x;
     function assign(tar, src) {
         for (const k in src)
             tar[k] = src[k];
@@ -59,6 +60,40 @@ var app = (function () {
             ? assign({}, assign(ctx.$$scope.changed || {}, definition[1](fn ? fn(changed) : {})))
             : ctx.$$scope.changed || {};
     }
+    const is_client = typeof window !== 'undefined';
+    let now = is_client
+        ? () => window.performance.now()
+        : () => Date.now();
+    let raf = is_client ? requestAnimationFrame : noop;
+
+    const tasks = new Set();
+    let running = false;
+    function run_tasks() {
+        tasks.forEach(task => {
+            if (!task[0](now())) {
+                tasks.delete(task);
+                task[1]();
+            }
+        });
+        running = tasks.size > 0;
+        if (running)
+            raf(run_tasks);
+    }
+    function loop(fn) {
+        let task;
+        if (!running) {
+            running = true;
+            raf(run_tasks);
+        }
+        return {
+            promise: new Promise(fulfil => {
+                tasks.add(task = [fn, fulfil]);
+            }),
+            abort() {
+                tasks.delete(task);
+            }
+        };
+    }
 
     function append(target, node) {
         target.appendChild(node);
@@ -68,11 +103,6 @@ var app = (function () {
     }
     function detach(node) {
         node.parentNode.removeChild(node);
-    }
-    function detach_between(before, after) {
-        while (before.nextSibling && before.nextSibling !== after) {
-            before.parentNode.removeChild(before.nextSibling);
-        }
     }
     function element(name) {
         return document.createElement(name);
@@ -128,6 +158,62 @@ var app = (function () {
         const e = document.createEvent('CustomEvent');
         e.initCustomEvent(type, false, false, detail);
         return e;
+    }
+
+    let stylesheet;
+    let active = 0;
+    let current_rules = {};
+    // https://github.com/darkskyapp/string-hash/blob/master/index.js
+    function hash(str) {
+        let hash = 5381;
+        let i = str.length;
+        while (i--)
+            hash = ((hash << 5) - hash) ^ str.charCodeAt(i);
+        return hash >>> 0;
+    }
+    function create_rule(node, a, b, duration, delay, ease, fn, uid = 0) {
+        const step = 16.666 / duration;
+        let keyframes = '{\n';
+        for (let p = 0; p <= 1; p += step) {
+            const t = a + (b - a) * ease(p);
+            keyframes += p * 100 + `%{${fn(t, 1 - t)}}\n`;
+        }
+        const rule = keyframes + `100% {${fn(b, 1 - b)}}\n}`;
+        const name = `__svelte_${hash(rule)}_${uid}`;
+        if (!current_rules[name]) {
+            if (!stylesheet) {
+                const style = element('style');
+                document.head.appendChild(style);
+                stylesheet = style.sheet;
+            }
+            current_rules[name] = true;
+            stylesheet.insertRule(`@keyframes ${name} ${rule}`, stylesheet.cssRules.length);
+        }
+        const animation = node.style.animation || '';
+        node.style.animation = `${animation ? `${animation}, ` : ``}${name} ${duration}ms linear ${delay}ms 1 both`;
+        active += 1;
+        return name;
+    }
+    function delete_rule(node, name) {
+        node.style.animation = (node.style.animation || '')
+            .split(', ')
+            .filter(name
+            ? anim => anim.indexOf(name) < 0 // remove specific animation
+            : anim => anim.indexOf('__svelte') === -1 // remove all Svelte animations
+        )
+            .join(', ');
+        if (name && !--active)
+            clear_rules();
+    }
+    function clear_rules() {
+        raf(() => {
+            if (active)
+                return;
+            let i = stylesheet.cssRules.length;
+            while (i--)
+                stylesheet.deleteRule(i);
+            current_rules = {};
+        });
     }
 
     let current_component;
@@ -228,6 +314,20 @@ var app = (function () {
             $$.after_render.forEach(add_render_callback);
         }
     }
+
+    let promise;
+    function wait() {
+        if (!promise) {
+            promise = Promise.resolve();
+            promise.then(() => {
+                promise = null;
+            });
+        }
+        return promise;
+    }
+    function dispatch(node, direction, kind) {
+        node.dispatchEvent(custom_event(`${direction ? 'intro' : 'outro'}${kind}`));
+    }
     let outros;
     function group_outros() {
         outros = {
@@ -242,6 +342,110 @@ var app = (function () {
     }
     function on_outro(callback) {
         outros.callbacks.push(callback);
+    }
+    function create_bidirectional_transition(node, fn, params, intro) {
+        let config = fn(node, params);
+        let t = intro ? 0 : 1;
+        let running_program = null;
+        let pending_program = null;
+        let animation_name = null;
+        function clear_animation() {
+            if (animation_name)
+                delete_rule(node, animation_name);
+        }
+        function init(program, duration) {
+            const d = program.b - t;
+            duration *= Math.abs(d);
+            return {
+                a: t,
+                b: program.b,
+                d,
+                duration,
+                start: program.start,
+                end: program.start + duration,
+                group: program.group
+            };
+        }
+        function go(b) {
+            const { delay = 0, duration = 300, easing = identity, tick: tick$$1 = noop, css } = config;
+            const program = {
+                start: now() + delay,
+                b
+            };
+            if (!b) {
+                // @ts-ignore todo: improve typings
+                program.group = outros;
+                outros.remaining += 1;
+            }
+            if (running_program) {
+                pending_program = program;
+            }
+            else {
+                // if this is an intro, and there's a delay, we need to do
+                // an initial tick and/or apply CSS animation immediately
+                if (css) {
+                    clear_animation();
+                    animation_name = create_rule(node, t, b, duration, delay, easing, css);
+                }
+                if (b)
+                    tick$$1(0, 1);
+                running_program = init(program, duration);
+                add_render_callback(() => dispatch(node, b, 'start'));
+                loop(now$$1 => {
+                    if (pending_program && now$$1 > pending_program.start) {
+                        running_program = init(pending_program, duration);
+                        pending_program = null;
+                        dispatch(node, running_program.b, 'start');
+                        if (css) {
+                            clear_animation();
+                            animation_name = create_rule(node, t, running_program.b, running_program.duration, 0, easing, config.css);
+                        }
+                    }
+                    if (running_program) {
+                        if (now$$1 >= running_program.end) {
+                            tick$$1(t = running_program.b, 1 - t);
+                            dispatch(node, running_program.b, 'end');
+                            if (!pending_program) {
+                                // we're done
+                                if (running_program.b) {
+                                    // intro — we can tidy up immediately
+                                    clear_animation();
+                                }
+                                else {
+                                    // outro — needs to be coordinated
+                                    if (!--running_program.group.remaining)
+                                        run_all(running_program.group.callbacks);
+                                }
+                            }
+                            running_program = null;
+                        }
+                        else if (now$$1 >= running_program.start) {
+                            const p = now$$1 - running_program.start;
+                            t = running_program.a + running_program.d * easing(p / running_program.duration);
+                            tick$$1(t, 1 - t);
+                        }
+                    }
+                    return !!(running_program || pending_program);
+                });
+            }
+        }
+        return {
+            run(b) {
+                if (typeof config === 'function') {
+                    wait().then(() => {
+                        config = config();
+                        go(b);
+                    });
+                }
+                else {
+                    go(b);
+                }
+            },
+            end() {
+                clear_animation();
+                running_program = pending_program = null;
+            }
+        };
     }
 
     function handle_promise(promise, info) {
@@ -2003,6 +2207,34 @@ var app = (function () {
     	}
     }
 
+    function cubicOut(t) {
+        const f = t - 1.0;
+        return f * f * f + 1.0;
+    }
+
+    function fade(node, { delay = 0, duration = 400 }) {
+        const o = +getComputedStyle(node).opacity;
+        return {
+            delay,
+            duration,
+            css: t => `opacity: ${t * o}`
+        };
+    }
+    function fly(node, { delay = 0, duration = 400, easing = cubicOut, x = 0, y = 0, opacity = 0 }) {
+        const style = getComputedStyle(node);
+        const target_opacity = +style.opacity;
+        const transform = style.transform === 'none' ? '' : style.transform;
+        const od = target_opacity * (1 - opacity);
+        return {
+            delay,
+            duration,
+            easing,
+            css: (t, u) => `
+			transform: ${transform} translate(${(1 - t) * x}px, ${(1 - t) * y}px);
+			opacity: ${target_opacity - (od * u)}`
+        };
+    }
+
     /* src/Components/PrimaryButton.svelte generated by Svelte v3.4.3 */
 
     const file$2 = "src/Components/PrimaryButton.svelte";
@@ -2178,7 +2410,7 @@ var app = (function () {
     const file$4 = "src/Containers/MeetupsList/MeetupItem/MeetupItem.svelte";
 
     function create_fragment$6(ctx) {
-    	var article, div, h1, t0, t1, h2, t2, t3, t4, t5, a, t6, t7, footer, t8, current;
+    	var article, div, h1, t0, t1, h2, t2, t3, t4, t5, a, t6, t7, footer, t8, article_transition, current;
 
     	var primarybutton = new PrimaryButton({
     		props: { content: "See Details" },
@@ -2211,19 +2443,19 @@ var app = (function () {
     			t8 = space();
     			secondarybutton.$$.fragment.c();
     			h1.className = "svelte-r8vx95";
-    			add_location(h1, file$4, 80, 4, 1432);
+    			add_location(h1, file$4, 81, 4, 1503);
     			h2.className = "svelte-r8vx95";
-    			add_location(h2, file$4, 81, 4, 1454);
+    			add_location(h2, file$4, 82, 4, 1525);
     			a.href = ctx.link;
     			a.className = "svelte-r8vx95";
-    			add_location(a, file$4, 82, 4, 1494);
+    			add_location(a, file$4, 83, 4, 1565);
     			footer.className = "svelte-r8vx95";
-    			add_location(footer, file$4, 83, 4, 1526);
+    			add_location(footer, file$4, 84, 4, 1597);
     			div.className = "content svelte-r8vx95";
-    			add_location(div, file$4, 79, 2, 1406);
+    			add_location(div, file$4, 80, 2, 1477);
     			article.dataset.id = ctx.id;
     			article.className = "svelte-r8vx95";
-    			add_location(article, file$4, 78, 0, 1381);
+    			add_location(article, file$4, 79, 0, 1424);
     		},
 
     		l: function claim(nodes) {
@@ -2280,12 +2512,21 @@ var app = (function () {
 
     			secondarybutton.$$.fragment.i(local);
 
+    			add_render_callback(() => {
+    				if (!article_transition) article_transition = create_bidirectional_transition(article, fly, { y: 500 }, true);
+    				article_transition.run(1);
+    			});
+
     			current = true;
     		},
 
     		o: function outro(local) {
     			primarybutton.$$.fragment.o(local);
     			secondarybutton.$$.fragment.o(local);
+
+    			if (!article_transition) article_transition = create_bidirectional_transition(article, fly, { y: 500 }, false);
+    			article_transition.run(0);
+
     			current = false;
     		},
 
@@ -2297,6 +2538,10 @@ var app = (function () {
     			primarybutton.$destroy();
 
     			secondarybutton.$destroy();
+
+    			if (detaching) {
+    				if (article_transition) article_transition.end();
+    			}
     		}
     	};
     }
@@ -2674,19 +2919,20 @@ var app = (function () {
 
     const file$6 = "src/Components/Modal.svelte";
 
-    // (101:0) {:else}
-    function create_else_block$1(ctx) {
-    	var div;
+    // (123:0) {:catch error}
+    function create_catch_block(ctx) {
+    	var p, t_value = ctx.error.message, t;
 
     	return {
     		c: function create() {
-    			div = element("div");
-    			div.textContent = "loading";
-    			add_location(div, file$6, 101, 2, 2092);
+    			p = element("p");
+    			t = text(t_value);
+    			add_location(p, file$6, 123, 2, 2858);
     		},
 
     		m: function mount(target, anchor) {
-    			insert(target, div, anchor);
+    			insert(target, p, anchor);
+    			append(p, t);
     		},
 
     		p: noop,
@@ -2695,15 +2941,15 @@ var app = (function () {
 
     		d: function destroy(detaching) {
     			if (detaching) {
-    				detach(div);
+    				detach(p);
     			}
     		}
     	};
     }
 
-    // (81:0) {#if meetup}
-    function create_if_block$1(ctx) {
-    	var div3, div2, div0, div0_style_value, t0, div1, h1, t1_value = ctx.meetup.name, t1, t2, h2, t3_value = new Date(ctx.meetup.time).toString(), t3, t4, raw_value = ctx.meetup.description, raw_before, raw_after, t5, a, t6_value = ctx.meetup.event_url, t6, a_href_value, t7, footer, t8, current, dispose;
+    // (103:0) {:then meetup}
+    function create_then_block(ctx) {
+    	var div3, div2, div0, div0_style_value, t0, div1, h1, t1_value = ctx.meetup.name, t1, t2, h2, t3_value = new Date(ctx.meetup.time).toString(), t3, t4, raw_value = ctx.meetup.description, raw_before, raw_after, t5, a, t6_value = ctx.meetup.event_url, t6, a_href_value, t7, footer, t8, div3_transition, current, dispose;
 
     	var primarybutton = new PrimaryButton({
     		props: {
@@ -2744,22 +2990,22 @@ var app = (function () {
     			secondarybutton.$$.fragment.c();
     			div0.className = "background-image svelte-ar6k57";
     			div0.style.cssText = div0_style_value = `background-image: url(${ctx.meetup.photo_url})`;
-    			add_location(div0, file$6, 83, 6, 1521);
+    			add_location(div0, file$6, 105, 6, 2280);
     			h1.className = "svelte-ar6k57";
-    			add_location(h1, file$6, 87, 8, 1659);
+    			add_location(h1, file$6, 109, 8, 2418);
     			h2.className = "svelte-ar6k57";
-    			add_location(h2, file$6, 88, 8, 1692);
+    			add_location(h2, file$6, 110, 8, 2451);
     			a.href = a_href_value = ctx.meetup.event_url;
     			a.className = "svelte-ar6k57";
-    			add_location(a, file$6, 90, 8, 1779);
+    			add_location(a, file$6, 112, 8, 2538);
     			footer.className = "svelte-ar6k57";
-    			add_location(footer, file$6, 91, 8, 1839);
+    			add_location(footer, file$6, 113, 8, 2598);
     			div1.className = "content svelte-ar6k57";
-    			add_location(div1, file$6, 86, 6, 1629);
+    			add_location(div1, file$6, 108, 6, 2388);
     			div2.className = "modal svelte-ar6k57";
-    			add_location(div2, file$6, 82, 4, 1459);
+    			add_location(div2, file$6, 104, 4, 2218);
     			div3.className = "backdrop svelte-ar6k57";
-    			add_location(div3, file$6, 81, 2, 1423);
+    			add_location(div3, file$6, 103, 2, 2166);
 
     			dispose = [
     				listen(div2, "click", click_handler_2),
@@ -2793,32 +3039,7 @@ var app = (function () {
     			current = true;
     		},
 
-    		p: function update(changed, ctx) {
-    			if ((!current || changed.meetup) && div0_style_value !== (div0_style_value = `background-image: url(${ctx.meetup.photo_url})`)) {
-    				div0.style.cssText = div0_style_value;
-    			}
-
-    			if ((!current || changed.meetup) && t1_value !== (t1_value = ctx.meetup.name)) {
-    				set_data(t1, t1_value);
-    			}
-
-    			if ((!current || changed.meetup) && t3_value !== (t3_value = new Date(ctx.meetup.time).toString())) {
-    				set_data(t3, t3_value);
-    			}
-
-    			if ((!current || changed.meetup) && raw_value !== (raw_value = ctx.meetup.description)) {
-    				detach_between(raw_before, raw_after);
-    				raw_before.insertAdjacentHTML("afterend", raw_value);
-    			}
-
-    			if ((!current || changed.meetup) && t6_value !== (t6_value = ctx.meetup.event_url)) {
-    				set_data(t6, t6_value);
-    			}
-
-    			if ((!current || changed.meetup) && a_href_value !== (a_href_value = ctx.meetup.event_url)) {
-    				a.href = a_href_value;
-    			}
-    		},
+    		p: noop,
 
     		i: function intro(local) {
     			if (current) return;
@@ -2826,12 +3047,21 @@ var app = (function () {
 
     			secondarybutton.$$.fragment.i(local);
 
+    			add_render_callback(() => {
+    				if (!div3_transition) div3_transition = create_bidirectional_transition(div3, fade, {}, true);
+    				div3_transition.run(1);
+    			});
+
     			current = true;
     		},
 
     		o: function outro(local) {
     			primarybutton.$$.fragment.o(local);
     			secondarybutton.$$.fragment.o(local);
+
+    			if (!div3_transition) div3_transition = create_bidirectional_transition(div3, fade, {}, false);
+    			div3_transition.run(0);
+
     			current = false;
     		},
 
@@ -2844,33 +3074,63 @@ var app = (function () {
 
     			secondarybutton.$destroy();
 
+    			if (detaching) {
+    				if (div3_transition) div3_transition.end();
+    			}
+
     			run_all(dispose);
     		}
     	};
     }
 
-    function create_fragment$8(ctx) {
-    	var current_block_type_index, if_block, if_block_anchor, current;
-
-    	var if_block_creators = [
-    		create_if_block$1,
-    		create_else_block$1
-    	];
-
-    	var if_blocks = [];
-
-    	function select_block_type(ctx) {
-    		if (ctx.meetup) return 0;
-    		return 1;
-    	}
-
-    	current_block_type_index = select_block_type(ctx);
-    	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+    // (101:18)    <p>Loading Spinner!</p> {:then meetup}
+    function create_pending_block(ctx) {
+    	var p;
 
     	return {
     		c: function create() {
-    			if_block.c();
-    			if_block_anchor = empty();
+    			p = element("p");
+    			p.textContent = "Loading Spinner!";
+    			add_location(p, file$6, 101, 2, 2125);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, p, anchor);
+    		},
+
+    		p: noop,
+    		i: noop,
+    		o: noop,
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(p);
+    			}
+    		}
+    	};
+    }
+
+    function create_fragment$8(ctx) {
+    	var await_block_anchor, promise, current;
+
+    	let info = {
+    		ctx,
+    		current: null,
+    		pending: create_pending_block,
+    		then: create_then_block,
+    		catch: create_catch_block,
+    		value: 'meetup',
+    		error: 'error',
+    		blocks: Array(3)
+    	};
+
+    	handle_promise(promise = ctx.getMeetup, info);
+
+    	return {
+    		c: function create() {
+    			await_block_anchor = empty();
+
+    			info.block.c();
     		},
 
     		l: function claim(nodes) {
@@ -2878,52 +3138,46 @@ var app = (function () {
     		},
 
     		m: function mount(target, anchor) {
-    			if_blocks[current_block_type_index].m(target, anchor);
-    			insert(target, if_block_anchor, anchor);
+    			insert(target, await_block_anchor, anchor);
+
+    			info.block.m(target, info.anchor = anchor);
+    			info.mount = () => await_block_anchor.parentNode;
+    			info.anchor = await_block_anchor;
+
     			current = true;
     		},
 
-    		p: function update(changed, ctx) {
-    			var previous_block_index = current_block_type_index;
-    			current_block_type_index = select_block_type(ctx);
-    			if (current_block_type_index === previous_block_index) {
-    				if_blocks[current_block_type_index].p(changed, ctx);
-    			} else {
-    				group_outros();
-    				on_outro(() => {
-    					if_blocks[previous_block_index].d(1);
-    					if_blocks[previous_block_index] = null;
-    				});
-    				if_block.o(1);
-    				check_outros();
+    		p: function update(changed, new_ctx) {
+    			ctx = new_ctx;
+    			info.ctx = ctx;
 
-    				if_block = if_blocks[current_block_type_index];
-    				if (!if_block) {
-    					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
-    					if_block.c();
-    				}
-    				if_block.i(1);
-    				if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    			if (promise !== (promise = ctx.getMeetup) && handle_promise(promise, info)) ; else {
+    				info.block.p(changed, assign(assign({}, ctx), info.resolved));
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			if (if_block) if_block.i();
+    			info.block.i();
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (if_block) if_block.o();
+    			for (let i = 0; i < 3; i += 1) {
+    				const block = info.blocks[i];
+    				if (block) block.o();
+    			}
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			if_blocks[current_block_type_index].d(detaching);
-
     			if (detaching) {
-    				detach(if_block_anchor);
+    				detach(await_block_anchor);
     			}
+
+    			info.block.d(detaching);
+    			info = null;
     		}
     	};
     }
@@ -2942,17 +3196,12 @@ var app = (function () {
     	
 
       let { selectedMeetup } = $$props;
-      let meetup = null;
 
-      onMount(() => {
-        fetch(
-          `http://cors-anywhere.herokuapp.com/api.meetup.com/2/event/${selectedMeetup}?key=655078484b4e2d716365697571b69`
-        )
-          .then(res => res.json())
-          .then(data => {
-            $$invalidate('meetup', meetup = data);
-          });
-      });
+      let getMeetup = fetch(
+        `http://cors-anywhere.herokuapp.com/api.meetup.com/2/event/${selectedMeetup}?key=655078484b4e2d716365697571b69`
+      )
+        .then(res => res.json())
+        .then(data => data);
 
     	const writable_props = ['selectedMeetup'];
     	Object.keys($$props).forEach(key => {
@@ -2967,7 +3216,7 @@ var app = (function () {
     		if ('selectedMeetup' in $$props) $$invalidate('selectedMeetup', selectedMeetup = $$props.selectedMeetup);
     	};
 
-    	return { selectedMeetup, meetup, click_handler };
+    	return { selectedMeetup, getMeetup, click_handler };
     }
 
     class Modal extends SvelteComponentDev {
@@ -2996,7 +3245,7 @@ var app = (function () {
     const file$7 = "src/App.svelte";
 
     // (47:6) {#if showModal}
-    function create_if_block$2(ctx) {
+    function create_if_block$1(ctx) {
     	var current;
 
     	var modal = new Modal({
@@ -3040,7 +3289,7 @@ var app = (function () {
     }
 
     // (54:6) {:catch error}
-    function create_catch_block(ctx) {
+    function create_catch_block$1(ctx) {
     	var p, t_value = ctx.error.message, t;
 
     	return {
@@ -3068,7 +3317,7 @@ var app = (function () {
     }
 
     // (52:6) {:then meetupData}
-    function create_then_block(ctx) {
+    function create_then_block$1(ctx) {
     	var current;
 
     	var meetupslist = new MeetupsList({
@@ -3112,7 +3361,7 @@ var app = (function () {
     }
 
     // (50:25)          <p>Loading...</p>       {:then meetupData}
-    function create_pending_block(ctx) {
+    function create_pending_block$1(ctx) {
     	var p;
 
     	return {
@@ -3142,14 +3391,14 @@ var app = (function () {
     function create_default_slot_1$1(ctx) {
     	var t, await_block_anchor, promise, current;
 
-    	var if_block = (ctx.showModal) && create_if_block$2(ctx);
+    	var if_block = (ctx.showModal) && create_if_block$1(ctx);
 
     	let info = {
     		ctx,
     		current: null,
-    		pending: create_pending_block,
-    		then: create_then_block,
-    		catch: create_catch_block,
+    		pending: create_pending_block$1,
+    		then: create_then_block$1,
+    		catch: create_catch_block$1,
     		value: 'meetupData',
     		error: 'error',
     		blocks: Array(3)
@@ -3185,7 +3434,7 @@ var app = (function () {
     					if_block.p(changed, ctx);
     					if_block.i(1);
     				} else {
-    					if_block = create_if_block$2(ctx);
+    					if_block = create_if_block$1(ctx);
     					if_block.c();
     					if_block.i(1);
     					if_block.m(t.parentNode, t);
