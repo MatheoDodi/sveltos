@@ -9,7 +9,6 @@
   import Modal from "./Components/Modal.svelte";
 
   export let url = "";
-  let meetups;
   let showModal = false;
   let selectedMeetup = "";
 
@@ -17,24 +16,20 @@
     selectedMeetup = e.detail;
     showModal = !showModal;
   }
-  onMount(() => {
-    fetch(
-      "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
-      {
-        headers: {
-          origin: "x-requested-with"
-        }
+
+  let getMeetups = fetch(
+    "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
+    {
+      headers: {
+        origin: "x-requested-with"
       }
-    )
-      .then(res => res.json())
-      .then(data => {
-        meetups = [...data.events];
-        meetupsStore.update(mtps => {
-          return [...data.events];
-        });
-      })
-      .catch(err => console.log(err));
-  });
+    }
+  )
+    .then(res => res.json())
+    .then(data => {
+      return hobbies;
+    })
+    .catch(err => console.log(err));
 </script>
 
 <style>
@@ -51,9 +46,13 @@
       {#if showModal}
         <Modal {selectedMeetup} />
       {/if}
-      {#if meetups}
-        <MeetupsList {meetups} on:toggleModal={toggleModal} />
-      {/if}
+      {#await getMeetups}
+        <p>Loading...</p>
+      {:then hobbyData}
+        <MeetupsList {...hobbyData} on:toggleModal={toggleModal} />
+      {:catch error}
+        <p>{error.message}</p>
+      {/await}
     </Route>
   </main>
 </Router>

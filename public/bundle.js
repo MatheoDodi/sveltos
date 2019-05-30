@@ -9,6 +9,9 @@ var app = (function () {
             tar[k] = src[k];
         return tar;
     }
+    function is_promise(value) {
+        return value && typeof value.then === 'function';
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -239,6 +242,62 @@ var app = (function () {
     }
     function on_outro(callback) {
         outros.callbacks.push(callback);
+    }
+
+    function handle_promise(promise, info) {
+        const token = info.token = {};
+        function update(type, index, key, value) {
+            if (info.token !== token)
+                return;
+            info.resolved = key && { [key]: value };
+            const child_ctx = assign(assign({}, info.ctx), info.resolved);
+            const block = type && (info.current = type)(child_ctx);
+            if (info.block) {
+                if (info.blocks) {
+                    info.blocks.forEach((block, i) => {
+                        if (i !== index && block) {
+                            group_outros();
+                            on_outro(() => {
+                                block.d(1);
+                                info.blocks[i] = null;
+                            });
+                            block.o(1);
+                            check_outros();
+                        }
+                    });
+                }
+                else {
+                    info.block.d(1);
+                }
+                block.c();
+                if (block.i)
+                    block.i(1);
+                block.m(info.mount(), info.anchor);
+                flush();
+            }
+            info.block = block;
+            if (info.blocks)
+                info.blocks[index] = block;
+        }
+        if (is_promise(promise)) {
+            promise.then(value => {
+                update(info.then, 1, info.value, value);
+            }, error => {
+                update(info.catch, 2, info.error, error);
+            });
+            // if we previously had a then/catch block, destroy it
+            if (info.current !== info.pending) {
+                update(info.pending, 0);
+                return true;
+            }
+        }
+        else {
+            if (info.current !== info.then) {
+                update(info.then, 1, info.value, promise);
+                return true;
+            }
+            info.resolved = { [info.value]: promise };
+        }
     }
 
     function destroy_block(block, lookup) {
@@ -1797,75 +1856,6 @@ var app = (function () {
     	}
     }
 
-    const meetups = writable([
-      {
-        id: 'm1',
-        title: 'Coding Bootcamp',
-        subtitle: 'Learn to code in 2 hours',
-        description:
-          "In this meetup we will have some experts in the web development community that will help you teach how to code! We will be creating 3 websites and we'll be having a lot of fun!",
-        imageUrl:
-          'https://media.licdn.com/dms/image/C561BAQG-AId6iHvIeA/company-background_10000/0?e=2159024400&v=beta&t=A1iCxUdk2c5nvgPEJ38SCAQjini9ozOA3o47NkYCk8g',
-        address: '9200 Irvine Center Dr, Irvine, CA 92618',
-        contactEmail: 'support@learningfuze.com',
-        favorite: false
-      },
-      {
-        id: 'm2',
-        title: 'Coffee & Code OC',
-        subtitle: "Let's talk about code!",
-        description:
-          "Lot's of code and good coffee, what's not to like?! Be there!",
-        imageUrl:
-          'https://s3-media1.fl.yelpcdn.com/bphoto/urKT6cl0DR3tDNFQlRKJ6g/o.jpg',
-        address: ' 18100 Culver Dr, Irvine, CA 92612',
-        contactEmail: 'support@coffee&code.com',
-        favorite: false
-      },
-      {
-        id: 'm3',
-        title: 'HTML & CSS Fundementals',
-        subtitle: 'Learn everything about HTML & CSS!',
-        description: `Join us at our Los Angeles HQ in Venice master the fundamentals of HTML and CSS! This workshop is designed specifically with beginners in mind! To get the full experience we recommend coming onsite, however a live-stream will be available if you’re unable to make it.
-
-      This workshop will be a combination of live interactive lecture and pair programming through challenges! You will walk away with a new understanding of the core elements that make up HTML to add content to a web page, and the fundamental pieces of CSS to bring it to life.
-      
-      We’ll cover the concepts that are the foundation of all web development so you can confidently use them as you work on harder concepts to come.
-      
-      Specifically:
-      
-      - Text elements (headings, paragraphs, lists)
-      
-      - Division elements
-      
-      - Styling Selectors (elements, class and id)
-      
-      Price: Always free!
-      
-      Parking Info: If you’re attending in person we have free parking for the workshop in the lot.
-      
-      Online Info: Please join us for the online stream of the workshop here: https://codesmith.io/event-signin/325?ol=t (online start time may vary by 30 mins).
-      
-      Experience Level:
-      All experience levels welcome. We recommend getting started on our free JavaScript learning platform CSX (https://csx.codesmith.io/) and working on the Precourse unit before the workshop.
-      
-      We offer free JavaScript workshops several times a week!
-      
-      Typically our weekly schedule is:
-      
-      - Tuesdays: JavaScript The Easier Parts (In-person & Online)
-      
-      - Wednesdays: Build A Web App (In-person & Online) & JavaScript The Hard Parts (Online Only)
-      
-      - Thursdays: JavaScript The Hard Parts (In-person & Online)`,
-        imageUrl:
-          'https://cdn-images-1.medium.com/max/1600/1*UAM0cE0Dko0zTTK443fKZg.jpeg',
-        address: '1600 Main St, Venice, CA',
-        contactEmail: 'support@codesmith.com',
-        favorite: false
-      }
-    ]);
-
     /* src/Components/Header.svelte generated by Svelte v3.4.3 */
 
     const file$1 = "src/Components/Header.svelte";
@@ -2713,7 +2703,7 @@ var app = (function () {
 
     const file$6 = "src/Components/Modal.svelte";
 
-    // (108:0) {:else}
+    // (107:0) {:else}
     function create_else_block$1(ctx) {
     	var div;
 
@@ -2721,7 +2711,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			div.textContent = "loading";
-    			add_location(div, file$6, 108, 2, 2155);
+    			add_location(div, file$6, 107, 2, 2128);
     		},
 
     		m: function mount(target, anchor) {
@@ -2740,13 +2730,13 @@ var app = (function () {
     	};
     }
 
-    // (88:0) {#if meetup}
+    // (87:0) {#if meetup}
     function create_if_block$1(ctx) {
     	var div3, div2, div0, div0_style_value, t0, div1, h1, t1_value = ctx.meetup.name, t1, t2, h2, t3_value = new Date(ctx.meetup.time).toString(), t3, t4, raw_value = ctx.meetup.description, raw_before, raw_after, t5, a, t6_value = ctx.meetup.event_url, t6, a_href_value, t7, footer, t8, current;
 
     	var primarybutton = new PrimaryButton({
     		props: {
-    		onClick: ctx.func,
+    		onClick: func,
     		content: "See Details"
     	},
     		$$inline: true
@@ -2783,22 +2773,22 @@ var app = (function () {
     			secondarybutton.$$.fragment.c();
     			div0.className = "background-image svelte-1q0tvra";
     			div0.style.cssText = div0_style_value = `background-image: url(${ctx.meetup.photo_url})`;
-    			add_location(div0, file$6, 90, 6, 1584);
+    			add_location(div0, file$6, 89, 6, 1557);
     			h1.className = "svelte-1q0tvra";
-    			add_location(h1, file$6, 94, 8, 1722);
+    			add_location(h1, file$6, 93, 8, 1695);
     			h2.className = "svelte-1q0tvra";
-    			add_location(h2, file$6, 95, 8, 1755);
+    			add_location(h2, file$6, 94, 8, 1728);
     			a.href = a_href_value = ctx.meetup.event_url;
     			a.className = "svelte-1q0tvra";
-    			add_location(a, file$6, 97, 8, 1842);
+    			add_location(a, file$6, 96, 8, 1815);
     			footer.className = "svelte-1q0tvra";
-    			add_location(footer, file$6, 98, 8, 1902);
+    			add_location(footer, file$6, 97, 8, 1875);
     			div1.className = "content svelte-1q0tvra";
-    			add_location(div1, file$6, 93, 6, 1692);
+    			add_location(div1, file$6, 92, 6, 1665);
     			div2.className = "modal svelte-1q0tvra";
-    			add_location(div2, file$6, 89, 4, 1558);
+    			add_location(div2, file$6, 88, 4, 1531);
     			div3.className = "backdrop svelte-1q0tvra";
-    			add_location(div3, file$6, 88, 2, 1531);
+    			add_location(div3, file$6, 87, 2, 1504);
     		},
 
     		m: function mount(target, anchor) {
@@ -2960,6 +2950,10 @@ var app = (function () {
     	};
     }
 
+    function func() {
+    	return console.log('clicked');
+    }
+
     function click_handler() {}
 
     function instance$7($$self, $$props, $$invalidate) {
@@ -2974,7 +2968,6 @@ var app = (function () {
         )
           .then(res => res.json())
           .then(data => {
-            console.log(data);
             $$invalidate('meetup', meetup = data);
           });
       });
@@ -2984,15 +2977,11 @@ var app = (function () {
     		if (!writable_props.includes(key)) console.warn(`<Modal> was created with unknown prop '${key}'`);
     	});
 
-    	function func() {
-    		return console.log('clicked');
-    	}
-
     	$$self.$set = $$props => {
     		if ('selectedMeetup' in $$props) $$invalidate('selectedMeetup', selectedMeetup = $$props.selectedMeetup);
     	};
 
-    	return { selectedMeetup, meetup, console, func };
+    	return { selectedMeetup, meetup };
     }
 
     class Modal extends SvelteComponentDev {
@@ -3020,8 +3009,8 @@ var app = (function () {
 
     const file$7 = "src/App.svelte";
 
-    // (51:6) {#if showModal}
-    function create_if_block_1$1(ctx) {
+    // (46:6) {#if showModal}
+    function create_if_block$2(ctx) {
     	var current;
 
     	var modal = new Modal({
@@ -3063,14 +3052,47 @@ var app = (function () {
     	};
     }
 
-    // (54:6) {#if meetups}
-    function create_if_block$2(ctx) {
+    // (53:6) {:catch error}
+    function create_catch_block(ctx) {
+    	var p, t_value = ctx.error.message, t;
+
+    	return {
+    		c: function create() {
+    			p = element("p");
+    			t = text(t_value);
+    			add_location(p, file$7, 53, 8, 1316);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, p, anchor);
+    			append(p, t);
+    		},
+
+    		p: noop,
+    		i: noop,
+    		o: noop,
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(p);
+    			}
+    		}
+    	};
+    }
+
+    // (51:6) {:then hobbyData}
+    function create_then_block(ctx) {
     	var current;
 
-    	var meetupslist = new MeetupsList({
-    		props: { meetups: ctx.meetups },
-    		$$inline: true
-    	});
+    	var meetupslist_spread_levels = [
+    		ctx.hobbyData
+    	];
+
+    	let meetupslist_props = {};
+    	for (var i = 0; i < meetupslist_spread_levels.length; i += 1) {
+    		meetupslist_props = assign(meetupslist_props, meetupslist_spread_levels[i]);
+    	}
+    	var meetupslist = new MeetupsList({ props: meetupslist_props, $$inline: true });
     	meetupslist.$on("toggleModal", ctx.toggleModal);
 
     	return {
@@ -3084,8 +3106,9 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			var meetupslist_changes = {};
-    			if (changed.meetups) meetupslist_changes.meetups = ctx.meetups;
+    			var meetupslist_changes = changed.getMeetups ? get_spread_update(meetupslist_spread_levels, [
+    				ctx.hobbyData
+    			]) : {};
     			meetupslist.$set(meetupslist_changes);
     		},
 
@@ -3107,104 +3130,136 @@ var app = (function () {
     	};
     }
 
-    // (50:4) <Route path="/">
-    function create_default_slot_1$1(ctx) {
-    	var t, if_block1_anchor, current;
-
-    	var if_block0 = (ctx.showModal) && create_if_block_1$1(ctx);
-
-    	var if_block1 = (ctx.meetups) && create_if_block$2(ctx);
+    // (49:25)          <p>Loading...</p>       {:then hobbyData}
+    function create_pending_block(ctx) {
+    	var p;
 
     	return {
     		c: function create() {
-    			if (if_block0) if_block0.c();
-    			t = space();
-    			if (if_block1) if_block1.c();
-    			if_block1_anchor = empty();
+    			p = element("p");
+    			p.textContent = "Loading...";
+    			add_location(p, file$7, 49, 8, 1177);
     		},
 
     		m: function mount(target, anchor) {
-    			if (if_block0) if_block0.m(target, anchor);
-    			insert(target, t, anchor);
-    			if (if_block1) if_block1.m(target, anchor);
-    			insert(target, if_block1_anchor, anchor);
-    			current = true;
+    			insert(target, p, anchor);
     		},
 
-    		p: function update(changed, ctx) {
-    			if (ctx.showModal) {
-    				if (if_block0) {
-    					if_block0.p(changed, ctx);
-    					if_block0.i(1);
-    				} else {
-    					if_block0 = create_if_block_1$1(ctx);
-    					if_block0.c();
-    					if_block0.i(1);
-    					if_block0.m(t.parentNode, t);
-    				}
-    			} else if (if_block0) {
-    				group_outros();
-    				on_outro(() => {
-    					if_block0.d(1);
-    					if_block0 = null;
-    				});
-
-    				if_block0.o(1);
-    				check_outros();
-    			}
-
-    			if (ctx.meetups) {
-    				if (if_block1) {
-    					if_block1.p(changed, ctx);
-    					if_block1.i(1);
-    				} else {
-    					if_block1 = create_if_block$2(ctx);
-    					if_block1.c();
-    					if_block1.i(1);
-    					if_block1.m(if_block1_anchor.parentNode, if_block1_anchor);
-    				}
-    			} else if (if_block1) {
-    				group_outros();
-    				on_outro(() => {
-    					if_block1.d(1);
-    					if_block1 = null;
-    				});
-
-    				if_block1.o(1);
-    				check_outros();
-    			}
-    		},
-
-    		i: function intro(local) {
-    			if (current) return;
-    			if (if_block0) if_block0.i();
-    			if (if_block1) if_block1.i();
-    			current = true;
-    		},
-
-    		o: function outro(local) {
-    			if (if_block0) if_block0.o();
-    			if (if_block1) if_block1.o();
-    			current = false;
-    		},
+    		p: noop,
+    		i: noop,
+    		o: noop,
 
     		d: function destroy(detaching) {
-    			if (if_block0) if_block0.d(detaching);
-
     			if (detaching) {
-    				detach(t);
-    			}
-
-    			if (if_block1) if_block1.d(detaching);
-
-    			if (detaching) {
-    				detach(if_block1_anchor);
+    				detach(p);
     			}
     		}
     	};
     }
 
-    // (46:0) <Router {url}>
+    // (45:4) <Route path="/">
+    function create_default_slot_1$1(ctx) {
+    	var t, await_block_anchor, promise, current;
+
+    	var if_block = (ctx.showModal) && create_if_block$2(ctx);
+
+    	let info = {
+    		ctx,
+    		current: null,
+    		pending: create_pending_block,
+    		then: create_then_block,
+    		catch: create_catch_block,
+    		value: 'hobbyData',
+    		error: 'error',
+    		blocks: Array(3)
+    	};
+
+    	handle_promise(promise = ctx.getMeetups, info);
+
+    	return {
+    		c: function create() {
+    			if (if_block) if_block.c();
+    			t = space();
+    			await_block_anchor = empty();
+
+    			info.block.c();
+    		},
+
+    		m: function mount(target, anchor) {
+    			if (if_block) if_block.m(target, anchor);
+    			insert(target, t, anchor);
+    			insert(target, await_block_anchor, anchor);
+
+    			info.block.m(target, info.anchor = anchor);
+    			info.mount = () => await_block_anchor.parentNode;
+    			info.anchor = await_block_anchor;
+
+    			current = true;
+    		},
+
+    		p: function update(changed, new_ctx) {
+    			ctx = new_ctx;
+    			if (ctx.showModal) {
+    				if (if_block) {
+    					if_block.p(changed, ctx);
+    					if_block.i(1);
+    				} else {
+    					if_block = create_if_block$2(ctx);
+    					if_block.c();
+    					if_block.i(1);
+    					if_block.m(t.parentNode, t);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+    				on_outro(() => {
+    					if_block.d(1);
+    					if_block = null;
+    				});
+
+    				if_block.o(1);
+    				check_outros();
+    			}
+
+    			info.ctx = ctx;
+
+    			if (promise !== (promise = ctx.getMeetups) && handle_promise(promise, info)) ; else {
+    				info.block.p(changed, assign(assign({}, ctx), info.resolved));
+    			}
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			if (if_block) if_block.i();
+    			info.block.i();
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			if (if_block) if_block.o();
+
+    			for (let i = 0; i < 3; i += 1) {
+    				const block = info.blocks[i];
+    				if (block) block.o();
+    			}
+
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			if (if_block) if_block.d(detaching);
+
+    			if (detaching) {
+    				detach(t);
+    				detach(await_block_anchor);
+    			}
+
+    			info.block.d(detaching);
+    			info = null;
+    		}
+    	};
+    }
+
+    // (41:0) <Router {url}>
     function create_default_slot$1(ctx) {
     	var t, main, current;
 
@@ -3226,7 +3281,7 @@ var app = (function () {
     			main = element("main");
     			route.$$.fragment.c();
     			main.className = "svelte-y4fh0p";
-    			add_location(main, file$7, 47, 2, 1130);
+    			add_location(main, file$7, 42, 2, 986);
     		},
 
     		m: function mount(target, anchor) {
@@ -3239,7 +3294,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var route_changes = {};
-    			if (changed.$$scope || changed.meetups || changed.showModal || changed.selectedMeetup) route_changes.$$scope = { changed, ctx };
+    			if (changed.$$scope || changed.showModal || changed.selectedMeetup) route_changes.$$scope = { changed, ctx };
     			route.$set(route_changes);
     		},
 
@@ -3300,7 +3355,7 @@ var app = (function () {
     		p: function update(changed, ctx) {
     			var router_changes = {};
     			if (changed.url) router_changes.url = ctx.url;
-    			if (changed.$$scope || changed.meetups || changed.showModal || changed.selectedMeetup) router_changes.$$scope = { changed, ctx };
+    			if (changed.$$scope || changed.showModal || changed.selectedMeetup) router_changes.$$scope = { changed, ctx };
     			router.$set(router_changes);
     		},
 
@@ -3326,7 +3381,6 @@ var app = (function () {
     	
 
       let { url = "" } = $$props;
-      let meetups$1;
       let showModal = false;
       let selectedMeetup = "";
 
@@ -3334,24 +3388,20 @@ var app = (function () {
         $$invalidate('selectedMeetup', selectedMeetup = e.detail);
         $$invalidate('showModal', showModal = !showModal);
       }
-      onMount(() => {
-        fetch(
-          "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
-          {
-            headers: {
-              origin: "x-requested-with"
-            }
+
+      let getMeetups = fetch(
+        "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
+        {
+          headers: {
+            origin: "x-requested-with"
           }
-        )
-          .then(res => res.json())
-          .then(data => {
-            $$invalidate('meetups', meetups$1 = [...data.events]);
-            meetups.update(mtps => {
-              return [...data.events];
-            });
-          })
-          .catch(err => console.log(err));
-      });
+        }
+      )
+        .then(res => res.json())
+        .then(data => {
+          return hobbies;
+        })
+        .catch(err => console.log(err));
 
     	const writable_props = ['url'];
     	Object.keys($$props).forEach(key => {
@@ -3364,10 +3414,10 @@ var app = (function () {
 
     	return {
     		url,
-    		meetups: meetups$1,
     		showModal,
     		selectedMeetup,
-    		toggleModal
+    		toggleModal,
+    		getMeetups
     	};
     }
 
