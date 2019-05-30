@@ -27,7 +27,8 @@
   )
     .then(res => res.json())
     .then(data => {
-      return hobbies;
+      console.log(data);
+      return data.events;
     })
     .catch(err => console.log(err));
 </script>
@@ -44,12 +45,12 @@
     <!-- <Route path="create" component={EditMeetup} /> -->
     <Route path="/">
       {#if showModal}
-        <Modal {selectedMeetup} />
+        <Modal {selectedMeetup} on:click={toggleModal} />
       {/if}
       {#await getMeetups}
         <p>Loading...</p>
-      {:then hobbyData}
-        <MeetupsList {...hobbyData} on:toggleModal={toggleModal} />
+      {:then meetupData}
+        <MeetupsList {meetupData} on:toggleModal={toggleModal} />
       {:catch error}
         <p>{error.message}</p>
       {/await}

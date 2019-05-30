@@ -2178,7 +2178,7 @@ var app = (function () {
     const file$4 = "src/Containers/MeetupsList/MeetupItem/MeetupItem.svelte";
 
     function create_fragment$6(ctx) {
-    	var article, div, h1, t0, t1, h2, t2, t3, t4, t5, raw_before, raw_after, t6, a, t7, t8, footer, t9, current;
+    	var article, div, h1, t0, t1, h2, t2, t3, t4, t5, a, t6, t7, footer, t8, current;
 
     	var primarybutton = new PrimaryButton({
     		props: { content: "See Details" },
@@ -2203,30 +2203,27 @@ var app = (function () {
     			t3 = text(", ");
     			t4 = text(ctx.local_time);
     			t5 = space();
-    			raw_before = element('noscript');
-    			raw_after = element('noscript');
-    			t6 = space();
     			a = element("a");
-    			t7 = text(ctx.link);
-    			t8 = space();
+    			t6 = text(ctx.link);
+    			t7 = space();
     			footer = element("footer");
     			primarybutton.$$.fragment.c();
-    			t9 = space();
+    			t8 = space();
     			secondarybutton.$$.fragment.c();
-    			h1.className = "svelte-1szhzzw";
-    			add_location(h1, file$4, 96, 4, 1796);
-    			h2.className = "svelte-1szhzzw";
-    			add_location(h2, file$4, 97, 4, 1818);
+    			h1.className = "svelte-r8vx95";
+    			add_location(h1, file$4, 80, 4, 1432);
+    			h2.className = "svelte-r8vx95";
+    			add_location(h2, file$4, 81, 4, 1454);
     			a.href = ctx.link;
-    			a.className = "svelte-1szhzzw";
-    			add_location(a, file$4, 99, 4, 1886);
-    			footer.className = "svelte-1szhzzw";
-    			add_location(footer, file$4, 100, 4, 1918);
-    			div.className = "content svelte-1szhzzw";
-    			add_location(div, file$4, 95, 2, 1770);
+    			a.className = "svelte-r8vx95";
+    			add_location(a, file$4, 82, 4, 1494);
+    			footer.className = "svelte-r8vx95";
+    			add_location(footer, file$4, 83, 4, 1526);
+    			div.className = "content svelte-r8vx95";
+    			add_location(div, file$4, 79, 2, 1406);
     			article.dataset.id = ctx.id;
-    			article.className = "svelte-1szhzzw";
-    			add_location(article, file$4, 94, 0, 1745);
+    			article.className = "svelte-r8vx95";
+    			add_location(article, file$4, 78, 0, 1381);
     		},
 
     		l: function claim(nodes) {
@@ -2244,16 +2241,12 @@ var app = (function () {
     			append(h2, t3);
     			append(h2, t4);
     			append(div, t5);
-    			append(div, raw_before);
-    			raw_before.insertAdjacentHTML("afterend", ctx.snapDescription);
-    			append(div, raw_after);
-    			append(div, t6);
     			append(div, a);
-    			append(a, t7);
-    			append(div, t8);
+    			append(a, t6);
+    			append(div, t7);
     			append(div, footer);
     			mount_component(primarybutton, footer, null);
-    			append(footer, t9);
+    			append(footer, t8);
     			mount_component(secondarybutton, footer, null);
     			current = true;
     		},
@@ -2271,13 +2264,8 @@ var app = (function () {
     				set_data(t4, ctx.local_time);
     			}
 
-    			if (!current || changed.snapDescription) {
-    				detach_between(raw_before, raw_after);
-    				raw_before.insertAdjacentHTML("afterend", ctx.snapDescription);
-    			}
-
     			if (!current || changed.link) {
-    				set_data(t7, ctx.link);
+    				set_data(t6, ctx.link);
     				a.href = ctx.link;
     			}
 
@@ -2318,23 +2306,7 @@ var app = (function () {
 
       let { created, duration, id, name, date_in_series_pattern, status, time, local_date, local_time, yes_rsvp_count, link, description } = $$props;
 
-      console.log(description);
       const dispatch = createEventDispatcher();
-      let snapDescription;
-
-      // Check to see if description is too long
-      if (description) {
-        if (description.split(" ").length > 15) {
-          // Trim description
-          $$invalidate('snapDescription', snapDescription =
-            description
-              .split(" ")
-              .slice(0, 10)
-              .join(" ") + "...</p>");
-        } else {
-          $$invalidate('snapDescription', snapDescription = description);
-        }
-      }
 
       function showMore() {
         console.log(id);
@@ -2374,7 +2346,6 @@ var app = (function () {
     		yes_rsvp_count,
     		link,
     		description,
-    		snapDescription,
     		showMore
     	};
     }
@@ -2531,7 +2502,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (18:2) {#each meetups as meetup (meetup.id)}
+    // (18:2) {#each meetupData as meetup (meetup.id)}
     function create_each_block(key_1, ctx) {
     	var first, current;
 
@@ -2564,7 +2535,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			var meetupitem_changes = changed.meetups ? get_spread_update(meetupitem_spread_levels, [
+    			var meetupitem_changes = changed.meetupData ? get_spread_update(meetupitem_spread_levels, [
     				ctx.meetup
     			]) : {};
     			meetupitem.$set(meetupitem_changes);
@@ -2595,7 +2566,7 @@ var app = (function () {
     function create_fragment$7(ctx) {
     	var div, each_blocks = [], each_1_lookup = new Map(), current;
 
-    	var each_value = ctx.meetups;
+    	var each_value = ctx.meetupData;
 
     	const get_key = ctx => ctx.meetup.id;
 
@@ -2611,7 +2582,7 @@ var app = (function () {
 
     			for (i = 0; i < each_blocks.length; i += 1) each_blocks[i].c();
     			div.className = "meetups-container svelte-6uvj0b";
-    			add_location(div, file$5, 16, 0, 329);
+    			add_location(div, file$5, 16, 0, 332);
     		},
 
     		l: function claim(nodes) {
@@ -2627,7 +2598,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			const each_value = ctx.meetups;
+    			const each_value = ctx.meetupData;
 
     			group_outros();
     			each_blocks = update_keyed_each(each_blocks, changed, get_key, 1, ctx, each_value, each_1_lookup, div, outro_and_destroy_block, create_each_block, null, get_each_context);
@@ -2658,9 +2629,9 @@ var app = (function () {
     }
 
     function instance$6($$self, $$props, $$invalidate) {
-    	let { meetups } = $$props;
+    	let { meetupData } = $$props;
 
-    	const writable_props = ['meetups'];
+    	const writable_props = ['meetupData'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key)) console.warn(`<MeetupsList> was created with unknown prop '${key}'`);
     	});
@@ -2670,29 +2641,29 @@ var app = (function () {
     	}
 
     	$$self.$set = $$props => {
-    		if ('meetups' in $$props) $$invalidate('meetups', meetups = $$props.meetups);
+    		if ('meetupData' in $$props) $$invalidate('meetupData', meetupData = $$props.meetupData);
     	};
 
-    	return { meetups, toggleModal_handler };
+    	return { meetupData, toggleModal_handler };
     }
 
     class MeetupsList extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$6, create_fragment$7, safe_not_equal, ["meetups"]);
+    		init(this, options, instance$6, create_fragment$7, safe_not_equal, ["meetupData"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.meetups === undefined && !('meetups' in props)) {
-    			console.warn("<MeetupsList> was created without expected prop 'meetups'");
+    		if (ctx.meetupData === undefined && !('meetupData' in props)) {
+    			console.warn("<MeetupsList> was created without expected prop 'meetupData'");
     		}
     	}
 
-    	get meetups() {
+    	get meetupData() {
     		throw new Error("<MeetupsList>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set meetups(value) {
+    	set meetupData(value) {
     		throw new Error("<MeetupsList>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -2703,7 +2674,7 @@ var app = (function () {
 
     const file$6 = "src/Components/Modal.svelte";
 
-    // (107:0) {:else}
+    // (101:0) {:else}
     function create_else_block$1(ctx) {
     	var div;
 
@@ -2711,7 +2682,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			div.textContent = "loading";
-    			add_location(div, file$6, 107, 2, 2128);
+    			add_location(div, file$6, 101, 2, 2092);
     		},
 
     		m: function mount(target, anchor) {
@@ -2730,9 +2701,9 @@ var app = (function () {
     	};
     }
 
-    // (87:0) {#if meetup}
+    // (81:0) {#if meetup}
     function create_if_block$1(ctx) {
-    	var div3, div2, div0, div0_style_value, t0, div1, h1, t1_value = ctx.meetup.name, t1, t2, h2, t3_value = new Date(ctx.meetup.time).toString(), t3, t4, raw_value = ctx.meetup.description, raw_before, raw_after, t5, a, t6_value = ctx.meetup.event_url, t6, a_href_value, t7, footer, t8, current;
+    	var div3, div2, div0, div0_style_value, t0, div1, h1, t1_value = ctx.meetup.name, t1, t2, h2, t3_value = new Date(ctx.meetup.time).toString(), t3, t4, raw_value = ctx.meetup.description, raw_before, raw_after, t5, a, t6_value = ctx.meetup.event_url, t6, a_href_value, t7, footer, t8, current, dispose;
 
     	var primarybutton = new PrimaryButton({
     		props: {
@@ -2746,7 +2717,7 @@ var app = (function () {
     		props: { content: 'Testing' },
     		$$inline: true
     	});
-    	secondarybutton.$on("click", click_handler);
+    	secondarybutton.$on("click", click_handler_1);
 
     	return {
     		c: function create() {
@@ -2771,24 +2742,29 @@ var app = (function () {
     			primarybutton.$$.fragment.c();
     			t8 = space();
     			secondarybutton.$$.fragment.c();
-    			div0.className = "background-image svelte-1q0tvra";
+    			div0.className = "background-image svelte-ar6k57";
     			div0.style.cssText = div0_style_value = `background-image: url(${ctx.meetup.photo_url})`;
-    			add_location(div0, file$6, 89, 6, 1557);
-    			h1.className = "svelte-1q0tvra";
-    			add_location(h1, file$6, 93, 8, 1695);
-    			h2.className = "svelte-1q0tvra";
-    			add_location(h2, file$6, 94, 8, 1728);
+    			add_location(div0, file$6, 83, 6, 1521);
+    			h1.className = "svelte-ar6k57";
+    			add_location(h1, file$6, 87, 8, 1659);
+    			h2.className = "svelte-ar6k57";
+    			add_location(h2, file$6, 88, 8, 1692);
     			a.href = a_href_value = ctx.meetup.event_url;
-    			a.className = "svelte-1q0tvra";
-    			add_location(a, file$6, 96, 8, 1815);
-    			footer.className = "svelte-1q0tvra";
-    			add_location(footer, file$6, 97, 8, 1875);
-    			div1.className = "content svelte-1q0tvra";
-    			add_location(div1, file$6, 92, 6, 1665);
-    			div2.className = "modal svelte-1q0tvra";
-    			add_location(div2, file$6, 88, 4, 1531);
-    			div3.className = "backdrop svelte-1q0tvra";
-    			add_location(div3, file$6, 87, 2, 1504);
+    			a.className = "svelte-ar6k57";
+    			add_location(a, file$6, 90, 8, 1779);
+    			footer.className = "svelte-ar6k57";
+    			add_location(footer, file$6, 91, 8, 1839);
+    			div1.className = "content svelte-ar6k57";
+    			add_location(div1, file$6, 86, 6, 1629);
+    			div2.className = "modal svelte-ar6k57";
+    			add_location(div2, file$6, 82, 4, 1459);
+    			div3.className = "backdrop svelte-ar6k57";
+    			add_location(div3, file$6, 81, 2, 1423);
+
+    			dispose = [
+    				listen(div2, "click", click_handler_2),
+    				listen(div3, "click", ctx.click_handler)
+    			];
     		},
 
     		m: function mount(target, anchor) {
@@ -2867,6 +2843,8 @@ var app = (function () {
     			primarybutton.$destroy();
 
     			secondarybutton.$destroy();
+
+    			run_all(dispose);
     		}
     	};
     }
@@ -2954,7 +2932,11 @@ var app = (function () {
     	return console.log('clicked');
     }
 
-    function click_handler() {}
+    function click_handler_1() {}
+
+    function click_handler_2(e) {
+    	return e.stopPropagation();
+    }
 
     function instance$7($$self, $$props, $$invalidate) {
     	
@@ -2977,11 +2959,15 @@ var app = (function () {
     		if (!writable_props.includes(key)) console.warn(`<Modal> was created with unknown prop '${key}'`);
     	});
 
+    	function click_handler(event) {
+    		bubble($$self, event);
+    	}
+
     	$$self.$set = $$props => {
     		if ('selectedMeetup' in $$props) $$invalidate('selectedMeetup', selectedMeetup = $$props.selectedMeetup);
     	};
 
-    	return { selectedMeetup, meetup };
+    	return { selectedMeetup, meetup, click_handler };
     }
 
     class Modal extends SvelteComponentDev {
@@ -3009,7 +2995,7 @@ var app = (function () {
 
     const file$7 = "src/App.svelte";
 
-    // (46:6) {#if showModal}
+    // (47:6) {#if showModal}
     function create_if_block$2(ctx) {
     	var current;
 
@@ -3017,6 +3003,7 @@ var app = (function () {
     		props: { selectedMeetup: ctx.selectedMeetup },
     		$$inline: true
     	});
+    	modal.$on("click", ctx.toggleModal);
 
     	return {
     		c: function create() {
@@ -3052,7 +3039,7 @@ var app = (function () {
     	};
     }
 
-    // (53:6) {:catch error}
+    // (54:6) {:catch error}
     function create_catch_block(ctx) {
     	var p, t_value = ctx.error.message, t;
 
@@ -3060,7 +3047,7 @@ var app = (function () {
     		c: function create() {
     			p = element("p");
     			t = text(t_value);
-    			add_location(p, file$7, 53, 8, 1316);
+    			add_location(p, file$7, 54, 8, 1367);
     		},
 
     		m: function mount(target, anchor) {
@@ -3080,19 +3067,14 @@ var app = (function () {
     	};
     }
 
-    // (51:6) {:then hobbyData}
+    // (52:6) {:then meetupData}
     function create_then_block(ctx) {
     	var current;
 
-    	var meetupslist_spread_levels = [
-    		ctx.hobbyData
-    	];
-
-    	let meetupslist_props = {};
-    	for (var i = 0; i < meetupslist_spread_levels.length; i += 1) {
-    		meetupslist_props = assign(meetupslist_props, meetupslist_spread_levels[i]);
-    	}
-    	var meetupslist = new MeetupsList({ props: meetupslist_props, $$inline: true });
+    	var meetupslist = new MeetupsList({
+    		props: { meetupData: ctx.meetupData },
+    		$$inline: true
+    	});
     	meetupslist.$on("toggleModal", ctx.toggleModal);
 
     	return {
@@ -3106,9 +3088,8 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			var meetupslist_changes = changed.getMeetups ? get_spread_update(meetupslist_spread_levels, [
-    				ctx.hobbyData
-    			]) : {};
+    			var meetupslist_changes = {};
+    			if (changed.getMeetups) meetupslist_changes.meetupData = ctx.meetupData;
     			meetupslist.$set(meetupslist_changes);
     		},
 
@@ -3130,7 +3111,7 @@ var app = (function () {
     	};
     }
 
-    // (49:25)          <p>Loading...</p>       {:then hobbyData}
+    // (50:25)          <p>Loading...</p>       {:then meetupData}
     function create_pending_block(ctx) {
     	var p;
 
@@ -3138,7 +3119,7 @@ var app = (function () {
     		c: function create() {
     			p = element("p");
     			p.textContent = "Loading...";
-    			add_location(p, file$7, 49, 8, 1177);
+    			add_location(p, file$7, 50, 8, 1229);
     		},
 
     		m: function mount(target, anchor) {
@@ -3157,7 +3138,7 @@ var app = (function () {
     	};
     }
 
-    // (45:4) <Route path="/">
+    // (46:4) <Route path="/">
     function create_default_slot_1$1(ctx) {
     	var t, await_block_anchor, promise, current;
 
@@ -3169,7 +3150,7 @@ var app = (function () {
     		pending: create_pending_block,
     		then: create_then_block,
     		catch: create_catch_block,
-    		value: 'hobbyData',
+    		value: 'meetupData',
     		error: 'error',
     		blocks: Array(3)
     	};
@@ -3259,7 +3240,7 @@ var app = (function () {
     	};
     }
 
-    // (41:0) <Router {url}>
+    // (42:0) <Router {url}>
     function create_default_slot$1(ctx) {
     	var t, main, current;
 
@@ -3281,7 +3262,7 @@ var app = (function () {
     			main = element("main");
     			route.$$.fragment.c();
     			main.className = "svelte-y4fh0p";
-    			add_location(main, file$7, 42, 2, 986);
+    			add_location(main, file$7, 43, 2, 1015);
     		},
 
     		m: function mount(target, anchor) {
@@ -3399,7 +3380,8 @@ var app = (function () {
       )
         .then(res => res.json())
         .then(data => {
-          return hobbies;
+          console.log(data);
+          return data.events;
         })
         .catch(err => console.log(err));
 

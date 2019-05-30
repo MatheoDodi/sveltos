@@ -1,5 +1,5 @@
 <script>
-  export let meetups;
+  export let meetupData;
   import MeetupItem from "./MeetupItem/MeetupItem.svelte";
 </script>
 
@@ -15,7 +15,7 @@
 </style>
 
 <div class="meetups-container">
-  {#each meetups as meetup (meetup.id)}
+  {#each meetupData as meetup (meetup.id)}
     <MeetupItem {...meetup} on:toggleModal />
   {/each}
 </div>

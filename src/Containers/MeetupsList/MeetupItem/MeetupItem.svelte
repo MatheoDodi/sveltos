@@ -18,23 +18,7 @@
     link,
     description;
 
-  console.log(description);
   const dispatch = createEventDispatcher();
-  let snapDescription;
-
-  // Check to see if description is too long
-  if (description) {
-    if (description.split(" ").length > 15) {
-      // Trim description
-      snapDescription =
-        description
-          .split(" ")
-          .slice(0, 10)
-          .join(" ") + "...</p>";
-    } else {
-      snapDescription = description;
-    }
-  }
 
   function showMore() {
     console.log(id);
@@ -44,7 +28,7 @@
 
 <style>
   article {
-    height: 250px;
+    min-height: fit-content;
     display: flex;
     width: 100%;
     background-color: white;
@@ -96,7 +80,6 @@
   <div class="content">
     <h1> {name} </h1>
     <h2>{local_date}, {local_time}</h2>
-    {@html snapDescription}
     <a href={link}> {link} </a>
     <footer>
       <PrimaryButton on:click={showMore} content="See Details" />

@@ -65,12 +65,6 @@
     font-weight: lighter;
   }
 
-  .content p {
-    margin-top: 0;
-    margin-bottom: 0;
-    color: #829ab1;
-  }
-
   .content footer {
     margin-top: auto;
   }
@@ -85,8 +79,8 @@
 </style>
 
 {#if meetup}
-  <div class="backdrop">
-    <div class="modal">
+  <div class="backdrop" on:click>
+    <div class="modal" on:click={e => e.stopPropagation()}>
       <div
         class="background-image"
         style={`background-image: url(${meetup.photo_url})`} />
