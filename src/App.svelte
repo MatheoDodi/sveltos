@@ -18,16 +18,11 @@
   }
 
   let getMeetups = fetch(
-    "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
-    {
-      headers: {
-        origin: "x-requested-with"
-      }
-    }
+    "https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&apikey="
   )
     .then(res => res.json())
     .then(data => {
-      console.log(data);
+      console.log(data._embedded.events);
       return data.events;
     })
     .catch(err => console.log(err));

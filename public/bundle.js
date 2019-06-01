@@ -2207,31 +2207,12 @@ var app = (function () {
     	}
     }
 
-    function cubicOut(t) {
-        const f = t - 1.0;
-        return f * f * f + 1.0;
-    }
-
     function fade(node, { delay = 0, duration = 400 }) {
         const o = +getComputedStyle(node).opacity;
         return {
             delay,
             duration,
             css: t => `opacity: ${t * o}`
-        };
-    }
-    function fly(node, { delay = 0, duration = 400, easing = cubicOut, x = 0, y = 0, opacity = 0 }) {
-        const style = getComputedStyle(node);
-        const target_opacity = +style.opacity;
-        const transform = style.transform === 'none' ? '' : style.transform;
-        const od = target_opacity * (1 - opacity);
-        return {
-            delay,
-            duration,
-            easing,
-            css: (t, u) => `
-			transform: ${transform} translate(${(1 - t) * x}px, ${(1 - t) * y}px);
-			opacity: ${target_opacity - (od * u)}`
         };
     }
 
@@ -2443,19 +2424,19 @@ var app = (function () {
     			t8 = space();
     			secondarybutton.$$.fragment.c();
     			h1.className = "svelte-r8vx95";
-    			add_location(h1, file$4, 81, 4, 1503);
+    			add_location(h1, file$4, 81, 4, 1492);
     			h2.className = "svelte-r8vx95";
-    			add_location(h2, file$4, 82, 4, 1525);
+    			add_location(h2, file$4, 82, 4, 1514);
     			a.href = ctx.link;
     			a.className = "svelte-r8vx95";
-    			add_location(a, file$4, 83, 4, 1565);
+    			add_location(a, file$4, 83, 4, 1554);
     			footer.className = "svelte-r8vx95";
-    			add_location(footer, file$4, 84, 4, 1597);
+    			add_location(footer, file$4, 84, 4, 1586);
     			div.className = "content svelte-r8vx95";
-    			add_location(div, file$4, 80, 2, 1477);
+    			add_location(div, file$4, 80, 2, 1466);
     			article.dataset.id = ctx.id;
     			article.className = "svelte-r8vx95";
-    			add_location(article, file$4, 79, 0, 1424);
+    			add_location(article, file$4, 79, 0, 1425);
     		},
 
     		l: function claim(nodes) {
@@ -2513,7 +2494,7 @@ var app = (function () {
     			secondarybutton.$$.fragment.i(local);
 
     			add_render_callback(() => {
-    				if (!article_transition) article_transition = create_bidirectional_transition(article, fly, { y: 500 }, true);
+    				if (!article_transition) article_transition = create_bidirectional_transition(article, fade, {}, true);
     				article_transition.run(1);
     			});
 
@@ -2524,7 +2505,7 @@ var app = (function () {
     			primarybutton.$$.fragment.o(local);
     			secondarybutton.$$.fragment.o(local);
 
-    			if (!article_transition) article_transition = create_bidirectional_transition(article, fly, { y: 500 }, false);
+    			if (!article_transition) article_transition = create_bidirectional_transition(article, fade, {}, false);
     			article_transition.run(0);
 
     			current = false;
@@ -3244,7 +3225,7 @@ var app = (function () {
 
     const file$7 = "src/App.svelte";
 
-    // (47:6) {#if showModal}
+    // (42:6) {#if showModal}
     function create_if_block$1(ctx) {
     	var current;
 
@@ -3288,7 +3269,7 @@ var app = (function () {
     	};
     }
 
-    // (54:6) {:catch error}
+    // (49:6) {:catch error}
     function create_catch_block$1(ctx) {
     	var p, t_value = ctx.error.message, t;
 
@@ -3296,7 +3277,7 @@ var app = (function () {
     		c: function create() {
     			p = element("p");
     			t = text(t_value);
-    			add_location(p, file$7, 54, 8, 1367);
+    			add_location(p, file$7, 49, 8, 1283);
     		},
 
     		m: function mount(target, anchor) {
@@ -3316,7 +3297,7 @@ var app = (function () {
     	};
     }
 
-    // (52:6) {:then meetupData}
+    // (47:6) {:then meetupData}
     function create_then_block$1(ctx) {
     	var current;
 
@@ -3360,7 +3341,7 @@ var app = (function () {
     	};
     }
 
-    // (50:25)          <p>Loading...</p>       {:then meetupData}
+    // (45:25)          <p>Loading...</p>       {:then meetupData}
     function create_pending_block$1(ctx) {
     	var p;
 
@@ -3368,7 +3349,7 @@ var app = (function () {
     		c: function create() {
     			p = element("p");
     			p.textContent = "Loading...";
-    			add_location(p, file$7, 50, 8, 1229);
+    			add_location(p, file$7, 45, 8, 1145);
     		},
 
     		m: function mount(target, anchor) {
@@ -3387,7 +3368,7 @@ var app = (function () {
     	};
     }
 
-    // (46:4) <Route path="/">
+    // (41:4) <Route path="/">
     function create_default_slot_1$1(ctx) {
     	var t, await_block_anchor, promise, current;
 
@@ -3489,7 +3470,7 @@ var app = (function () {
     	};
     }
 
-    // (42:0) <Router {url}>
+    // (37:0) <Router {url}>
     function create_default_slot$1(ctx) {
     	var t, main, current;
 
@@ -3511,7 +3492,7 @@ var app = (function () {
     			main = element("main");
     			route.$$.fragment.c();
     			main.className = "svelte-y4fh0p";
-    			add_location(main, file$7, 43, 2, 1015);
+    			add_location(main, file$7, 38, 2, 931);
     		},
 
     		m: function mount(target, anchor) {
@@ -3620,16 +3601,11 @@ var app = (function () {
       }
 
       let getMeetups = fetch(
-        "http://cors-anywhere.herokuapp.com/api.meetup.com/find/upcoming_events?key=655078484b4e2d716365697571b69",
-        {
-          headers: {
-            origin: "x-requested-with"
-          }
-        }
+        "https://app.ticketmaster.com/discovery/v2/events.json?countryCode=US&apikey="
       )
         .then(res => res.json())
         .then(data => {
-          console.log(data);
+          console.log(data._embedded.events);
           return data.events;
         })
         .catch(err => console.log(err));

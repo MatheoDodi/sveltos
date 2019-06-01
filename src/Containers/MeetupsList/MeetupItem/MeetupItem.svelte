@@ -1,5 +1,5 @@
 <script>
-  import { fly } from "svelte/transition";
+  import { fade } from "svelte/transition";
   import { createEventDispatcher } from "svelte";
 
   import PrimaryButton from "../../../Components/PrimaryButton.svelte";
@@ -77,7 +77,7 @@
   }
 </style>
 
-<article transition:fly={{ y: 500 }} data-id={id}>
+<article transition:fade data-id={id}>
   <div class="content">
     <h1> {name} </h1>
     <h2>{local_date}, {local_time}</h2>
